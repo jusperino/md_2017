@@ -1,0 +1,3 @@
+delta_t 0.015
+t_end 485.0
+name komet
