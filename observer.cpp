@@ -44,8 +44,8 @@ void Observer::output_coordinates()
     coordinates
 		<< W.t << "\t";
 		for (int i = 0; i<W.particles.size(); i++){
-			coordinates << W.particles[i].F[0] << "\t"
-						<< W.particles[i].F[1] << "\t";
+			coordinates << W.particles[i].x[0] << "\t"
+						<< W.particles[i].x[1] << "\t";
 		}
 	coordinates << std::endl;
 }

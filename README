@@ -1,0 +1,16 @@
+Build the skeleton using
+
+   make
+
+Execute the program using
+
+   ./blatt1
+
+Generate the documentation using Doxygen
+
+   make doc
+
+Read the documentation with a Browser in
+
+   api-doc/html/index.html
+
