@@ -56,7 +56,8 @@ void VelocityVerlet::comp_F() {
     for (auto & it1: W.particles){
 		for (auto & it2: W.particles){
 			if (&it1 != &it2){
-				W.e_pot += Pot.force(it1, it2);
+				W.e_pot += 0.5*Pot.force(it1, it2);
+				// multiply potential by 0.5, as system potential energy is the sum of *unordered* pairwise potential
 			}
 		}
 	}
