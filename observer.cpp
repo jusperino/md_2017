@@ -10,7 +10,7 @@ Observer::Observer(World &_W) : W(_W)
     std::cout << "Opened " << statistics_filename << " for writing." << std::endl;
 
     // open coordinates file
-    std::string coordinates_filename = W.name + ".coordinates";
+    std::string coordinates_filename = W.name + ".csv";
     // open file, overwrite existing files, take no prisioners
     coordinates.open(coordinates_filename.c_str());
     // and tell the world
@@ -45,9 +45,14 @@ void Observer::output_coordinates()
 		<< W.t << "\t";
 		for (int i = 0; i<W.particles.size(); i++){
 			coordinates << W.particles[i].x[0] << "\t"
-						<< W.particles[i].x[1] << "\t";
+						<< W.particles[i].x[1] << "\t"
+                        /*<< W.particles[i].v[0] << "\t"
+                        << W.particles[i].v[1] << "\t"
+                        << W.particles[i].F[0] << "\t"
+                        << W.particles[i].F[1] << "\t"
+                        << " | " << "\t"*/;
 		}
-	coordinates << std::endl;
+    coordinates << std::endl;
 }
 
 void Observer::notify()

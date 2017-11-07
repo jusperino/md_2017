@@ -16,8 +16,8 @@ real GravityPotential::force(Particle &p, Particle &q) {
     real potential = -1* p.m * q.m / dist;
 	for (int i = 0; i<DIM; i++) {
 		real add_force = p.m * q.m * (q.x[i] - p.x[i]) / pow(dist,3);
-		p.F[i] = p.F_old[i] + add_force;
-		q.F[i] = q.F_old[i] - add_force;
+		p.F[i] += add_force;
+		//q.F[i] = q.F_old[i] - add_force;
 	}
     return potential;
 }

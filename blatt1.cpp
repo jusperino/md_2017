@@ -15,6 +15,14 @@ void debug(World &W, GravityPotential &Pot, int a, int b) {
 	std::cout << "Force on " << p1 << ": "  << W.particles[a].F[0] << ", " << W.particles[a].F[1] << std::endl;
 }
 
+void print_particle(Particle &p){
+	std::cout << p.id << "\tMass: " << p.m << "\n";
+	std::cout << "x0: " << p.x[0] << "\tx1: " << p.x[1] << "\n";
+	std::cout << "v0: " << p.v[0] << "\tv1: " << p.v[1] << "\n";
+	std::cout << "F0: " << p.F[0] << "\tF1: " << p.F[1] << "\n";
+	std::cout << "F_old0: " << p.F_old[0] << "\tF_old1: " << p.F_old[1] << "\n\n";
+}
+
 int main(int argc, char *argv[]) {
 
   // check arguments
@@ -24,6 +32,7 @@ int main(int argc, char *argv[]) {
               << "\t" << argv[0] << " parameterfile particledatafile" << std::endl;
     return EXIT_FAILURE;
   }
+
 
   // instanciate Potential
   GravityPotential Pot;
@@ -39,10 +48,11 @@ int main(int argc, char *argv[]) {
 
   // print World configuration
   std::cout << W << std::endl;
-  
-  //std::cout << W.particles[1].id << std::endl;
 
-  //debug(W, Pot, 0, 1);
+
+  // print_particle(W.particles[0]);
+
+  //std::cout << W.particles[1].id << std::endl;
   
   
   // create the Observer
@@ -54,6 +64,12 @@ int main(int argc, char *argv[]) {
 
   // run the simulation
   Verlet.simulate();
+
+  /*for(auto p: W.particles){
+    print_particle(p);
+  }*/
+
+  debug(W, Pot, 1, 0);
 
   return EXIT_SUCCESS;
 }

@@ -9,9 +9,11 @@ VelocityVerlet::VelocityVerlet(World& _W, Potential* _Pot, Observer& _O) : TimeD
 }
 
 void VelocityVerlet::simulate() {
-	//compute Forces for t=0
-	comp_F();
     // while simulation end time not reached
+
+	// initial calculation of forces
+	comp_F();
+
     while (W.t < W.t_end)
     {
         timestep(W.delta_t);
@@ -20,58 +22,67 @@ void VelocityVerlet::simulate() {
 
 void VelocityVerlet::timestep(real delta_t) {
     // test output
-    //std::cout << "timestep()" << std::endl;
+    //std::cout << "timestep()\t" << W.e_tot << std::endl;
 
-	//compute position for t=n using forces F_(n) computed in previous loop
-	update_X();
-	//compute forces for t=n+1
-	comp_F();
-	//compute velocities for t=n+1 using F_(n+1) from this loop and F_(n) computed in previous loop
-	update_V();
-
-	//calculate total system energy
-	W.e_tot = W.e_kin + W.e_pot;
-
-	//output total energy
-	//std::cout << W.t << ": " << W.e_tot << std::endl;
+    // calculate position
+    update_X();
+    // calculate forces
+    comp_F();
+    // calculate velocity
+    update_V();
 
     // increase time
     W.t += delta_t;
 
+    // set total energy
+    W.e_tot = W.e_pot + W.e_kin;
+
     // notify observer
     O.notify();
+
 }
 
 void VelocityVerlet::comp_F() {
-	W.e_pot = 0;
-    for (int i = 0; i<W.particles.size(); i++){
-		for (int j = i+1; j<W.particles.size(); j++){
-            W.e_pot += Pot.force(W.particles[i], W.particles[j]);
+
+	// set forces and potential energy to 0 in respect of conservation of energy
+	for (auto & p: W.particles){
+		for(size_t i = 0; i<DIM; i++){
+			p.F[i] = 0;
 		}
 	}
+	W.e_pot = 0;
 
+	// calculate forces of particles pairwise and sum up potential energy
+    for (auto & it1: W.particles){
+		for (auto & it2: W.particles){
+			if (&it1 != &it2){
+				W.e_pot += Pot.force(it1, it2);
+			}
+		}
+	}
 }
 
 void VelocityVerlet::update_V() {
+	// set kinetic energy to 0 in respect of conservation of energy
 	W.e_kin = 0;
-    for (int k = 0; k<W.particles.size(); k++){
-		real v_abs_squared = 0;
-		for (int i = 0; i<DIM; i++){
-			W.particles[k].v[i] += (W.particles[k].F[i] + W.particles[k].F_old[i])*W.delta_t/(2*W.particles[k].m);
-			v_abs_squared += pow(W.particles[k].v[i], 2);
-		}
-		W.e_kin += W.particles[k].m * v_abs_squared;
-	}
-	W.e_kin *= 0.5;
+
+	// update velocity v for each particle in each dimension and sum up kinetic energy
+    for (auto & p: W.particles){
+    	for(size_t i = 0; i<DIM; i++){
+    		p.v[i] = p.v[i] + W.delta_t * 0.5 / p.m * (p.F[i] + p.F_old[i]);
+    		W.e_kin += 0.5 * p.m * sqr(p.v[i]);
+    	}
+    }
 }
 
 void VelocityVerlet::update_X() {
-    for (int k = 0; k<W.particles.size(); k++){
-		for (int i = 0; i<DIM; i++){
-			W.particles[k].x[i] += W.delta_t * W.particles[k].v[i] + (W.particles[k].F[i] * pow(W.delta_t, 2))/(2*W.particles[k].m);
-			W.particles[k].F_old[i] =  W.particles[k].F[i];
-		}
-	}
+	 // update position x for each particle in each dimension
+	 for (auto & p: W.particles){
+	    	for(size_t i = 0; i<DIM; i++){
+	    		p.x[i] = p.x[i] + W.delta_t * (p.v[i] + 0.5 / p.m * p.F[i] * W.delta_t);
+	    		p.F_old[i] = p.F[i];
+	    	}
+	   }
 }
 
 // vim:set et sts=4 ts=4 sw=4 ai ci cin:
