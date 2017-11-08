@@ -3,7 +3,7 @@
 
 real GravityPotential::distance(Particle &p, Particle &q) {
 	//calculate euclidean norm of distance vector by looping over the dimensions
-	real sqrsum;
+	real sqrsum = 0;
 	for (int i = 0; i<DIM; i++) {
 		sqrsum += sqr(q.x[i] - p.x[i]);
 	}
