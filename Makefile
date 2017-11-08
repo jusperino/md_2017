@@ -6,7 +6,7 @@
 #
 
 # define the executable file 
-MAIN = blatt1
+MAIN = blatt1.exe
 
 # define the C source files
 SRCS = blatt1.cpp world.cpp timediscretization.cpp gravitypotential.cpp velocityverlet.cpp observer.cpp
@@ -15,7 +15,7 @@ SRCS = blatt1.cpp world.cpp timediscretization.cpp gravitypotential.cpp velocity
 CC = g++
 
 # define any compile-time flags
-CFLAGS = -Wall -g
+CFLAGS = -Wall -g -std=c++11
 
 # define any directories containing header files other than /usr/include
 #
