@@ -1,7 +1,14 @@
 #include "gravitypotential.hpp"
 #include <iostream>
 
-
+real GravityPotential::distance(Particle &p, Particle &q) {
+	//calculate euclidean norm of distance vector by looping over the dimensions
+	real sqrsum = 0;
+	for (int i = 0; i<DIM; i++) {
+		sqrsum += sqr(q.x[i] - p.x[i]);
+	}
+	return sqrt(sqrsum);
+}
 
 real GravityPotential::force(Particle &p, Particle &q) {
 	//calculate additional Force vector by looping over the dimensions
