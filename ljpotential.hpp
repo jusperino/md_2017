@@ -1,13 +1,13 @@
-#ifndef _GRAVITYPOTENTIAL_HPP
-#define _GRAVITYPOTENTIAL_HPP
+#ifndef _LJPOTENTIAL_HPP
+#define _LJPOTENTIAL_HPP
 
 #include "potential.hpp"
-
+#include <cmath>
 
 /**
  * @brief TODO add the documentation
  */
-class GravityPotential : public Potential {
+class LjPotential : public Potential {
 public:
 	
 	
@@ -22,5 +22,5 @@ public:
 	virtual real force(Particle &p, Particle &q);
 };
 
-#endif // _GRAVITYPOTENTIAL_HPP
+#endif // _LJPOTENTIAL_HPP
 // vim:set et sts=4 ts=4 sw=4 ai ci cin:
