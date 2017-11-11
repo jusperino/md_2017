@@ -8,6 +8,9 @@
 #include <iostream>
 #include <fstream>
 
+///Border Type
+enum BorderType{unknown = 0, leaving = 1};
+
 /**
  * @brief the world class holds all information of the simulation environment
  */
@@ -44,6 +47,12 @@ public:
     real delta_t;
     /// End of simulation
     real t_end;
+    /// world lenght
+    real lenght[DIM];
+    /// world upper border
+    BorderType upper_border[DIM];
+    /// lower world border
+    BorderType lower_border[DIM];
     /// kinetic energy
     real e_kin;
     /// potential energy

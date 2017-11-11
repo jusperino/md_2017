@@ -20,7 +20,7 @@ void World::read_Parameter(const std::string &filename) {
             );
 
     // helper strings
-    std::string line, option;
+    std::string line, option, value;
 
     // read file till eof
     while (parfile.good())
@@ -40,6 +40,44 @@ void World::read_Parameter(const std::string &filename) {
             strstr >> t_end;
         if (option=="name")
             strstr >> name;
+	if (option=="length")
+	{
+	    for (int i=0;i<DIM;i++)
+	    {
+		strstr >> lenght[i];
+	    }
+	}
+	if (option=="upper_border")
+	{
+	    for (int i=0;i<DIM;i++)
+	    {
+		strstr >> value;
+		if (value=="leaving")
+		{
+		    upper_border[i]=leaving;
+		}
+		else
+		{
+		    upper_border[i]=unknown;
+		}
+	    }
+	}
+	if (option=="lower_border")
+	{
+	    for (int i=0;i<DIM;i++)
+	    {
+		strstr >> value;
+		if (value=="leaving")
+		{
+		    lower_border[i]=leaving;
+		}
+		else
+		{
+		    lower_border[i]=unknown;
+		}
+	    }
+	}
+	option="";
     }
     // close file
     parfile.close();
@@ -94,8 +132,18 @@ void World::read_Particles(const std::string &filename) {
 }	
 
 std::ostream& operator << (std::ostream& os, World& W) {
-    os << "t=" << W.t << " delta_t=" << W.delta_t << " t_end=" << W.t_end
-       << " Number of Particles=" << W.particles.size();
+    os << "t=" << W.t << " delta_t=" << W.delta_t << " t_end=" << W.t_end <<" Number of Particles=" << W.particles.size()<< std::endl;
+
+    std::stringstream str_lengh, str_upper_border, str_lower_border;
+
+    
+    for (int i=0;i<DIM;i++)
+    {
+	str_lengh << "lengh["<<i<<"]=" << W.lenght[i]<< " ";
+	str_upper_border << "upper_border["<<i<<"]=" << W.upper_border[i]<< " ";
+	str_lower_border << "lower_border["<<i<<"]=" << W.lower_border[i]<< " ";
+    }
+    os << str_lengh.str() << std::endl << str_upper_border.str() << std::endl << str_lower_border.str() << std::endl;
     return os;
 }
 // vim:set et sts=4 ts=4 sw=4 ai ci cin:
