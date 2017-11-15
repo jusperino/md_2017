@@ -2,5 +2,5 @@
 *.d
 *.o
 blatt1
-halley.csv
-halley.csv
+*.csv
+*.statistics

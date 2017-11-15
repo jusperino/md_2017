@@ -93,35 +93,39 @@ void World::read_Particles(const std::string &filename) {
     {
         // read line from file
         getline(parfile,line);
-        // create a string stream
-        std::stringstream strstr;
-        // put line into string stream
-        strstr << line;
 
-        // create new particle
-        Particle p;
+        // ensure no empty particle is created
+        if (line != "") {
+            // create a string stream
+            std::stringstream strstr;
+            // put line into string stream
+            strstr << line;
 
-		// read particle id and mass from current line
-        strstr >> p.id >> p.m;
+            // create new particle
+            Particle p;
 
-        // read particle position vector dimension-wise from current line
-        for (int i = 0; i<DIM; ++i){
-            strstr >> p.x[i];
+            // read particle id and mass from current line
+            strstr >> p.id >> p.m;
+
+            // read particle position vector dimension-wise from current line
+            for (int i = 0; i<DIM; ++i){
+                strstr >> p.x[i];
+            }
+
+            // read particle velocity vector dimension-wise from current line
+            for (int i = 0; i<DIM; ++i){
+                strstr >> p.v[i];
+            }
+
+
+            // initialise particle force to zero dimension-wise
+            for (int i = 0; i<DIM; ++i){
+                p.F[i] = 0;
+            }
+
+            // store initiated particle
+            particles.push_back(p);
         }
-
-        // read particle velocity vector dimension-wise from current line
-        for (int i = 0; i<DIM; ++i){
-            strstr >> p.v[i];
-        }
-
-
-		// initialise particle force to zero dimension-wise
-		for (int i = 0; i<DIM; ++i){
-            p.F[i] = 0;
-        }
-
-		// store initiated particle
-        particles.push_back(p);
     }
     // close file
     parfile.close();
