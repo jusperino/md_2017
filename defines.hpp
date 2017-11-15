@@ -25,10 +25,10 @@
 #define _DEFINES_HPP
 
 // define the dimension of the particles
-#define DIM 2
+#define DIM 3
 // reals in double precision
 typedef double real;
-// squre define
+// square define
 #define sqr(_x) ((_x)*(_x))
 
 #endif // _DEFINES_HPP

@@ -53,23 +53,23 @@ int main(int argc, char *argv[]) {
   // print_particle(W.particles[0]);
 
   //std::cout << W.particles[1].id << std::endl;
-  
-  
+
+
   // create the Observer
   Observer O(W);
 
-  // instanciate timediscretization 
+  // instantiate timediscretization
   // remark: & is used to get the address of Pot
-  VelocityVerlet Verlet(W, &Pot, O);
+  //VelocityVerlet Verlet(W, &Pot, O);
 
   // run the simulation
-  Verlet.simulate();
+  //Verlet.simulate();
 
   /*for(auto p: W.particles){
     print_particle(p);
   }*/
 
-  debug(W, Pot, 1, 0);
+  //debug(W, Pot, 1, 0);
 
   return EXIT_SUCCESS;
 }

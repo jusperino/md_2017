@@ -47,11 +47,11 @@ public:
     real delta_t;
     /// End of simulation
     real t_end;
-    /// world lenght
-    real lenght[DIM];
-    /// world upper border
+    /// world length
+    real length[DIM];
+    /// world upper border flags
     BorderType upper_border[DIM];
-    /// lower world border
+    /// lower world border flags
     BorderType lower_border[DIM];
     /// kinetic energy
     real e_kin;
