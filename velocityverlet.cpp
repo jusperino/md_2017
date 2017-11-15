@@ -13,9 +13,11 @@ void VelocityVerlet::simulate() {
 
 	// initial calculation of forces
 	comp_F();
+	// remove particles initialised outside of sim area
+	handle_borders();
 
-    while (W.t < W.t_end)
-    {
+    // simulate over set timeperiod as long as particles are left
+    while (W.t < W.t_end && W.particles.size() != 0) {
         timestep(W.delta_t);
     }
 }
@@ -26,6 +28,8 @@ void VelocityVerlet::timestep(real delta_t) {
 
     // calculate position
     update_X();
+    // remove particles outside of simulation area
+    handle_borders();
     // calculate forces
     comp_F();
     // calculate velocity
@@ -84,6 +88,30 @@ void VelocityVerlet::update_X() {
 	    		p.F_old[i] = p.F[i];
 	    	}
 	   }
+}
+
+void VelocityVerlet::handle_borders() {
+    // check if any particle has left the simulation area
+    // if so, remove the particle entirely from the storage vector
+    auto it = W.particles.begin();
+
+    // loop over the particles with an iterator
+    // when a particle is removed, the iterator is pushed to the one after the removed one
+
+    while (it != W.particles.end()) {
+        bool removed = false;
+        auto &p = *it;
+        for (int i = 0; i<DIM; ++i){
+            if (p.x[i] > W.length[i]) {
+                it = W.particles.erase(it);
+                removed = true;
+                break;
+            }
+        }
+        if (!removed) {
+            ++it;
+        }
+    }
 }
 
 // vim:set et sts=4 ts=4 sw=4 ai ci cin:
