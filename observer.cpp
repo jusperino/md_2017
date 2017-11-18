@@ -18,7 +18,7 @@ Observer::Observer(World &_W) : W(_W)
 
     // open xyz file
     std::string xyz_filename = W.name + ".xyz";
-    // open file, overwrite existing files, take no prisioners
+    // open file, overwrite existing files, take no prisoners
     xyz.open(xyz_filename.c_str());
     // and tell the world
     std::cout << "Opened " << xyz_filename << " for writing." << std::endl;
@@ -34,8 +34,8 @@ Observer::~Observer()
 	if ( coordinates.is_open() )
         coordinates.close();
 	// close the xyz file
-		if ( xyz.is_open() )
-	        xyz.close();
+    if ( xyz.is_open() )
+        xyz.close();
 }
 
 void Observer::output_statistics()
