@@ -4,6 +4,7 @@
 
 #include "world.hpp"
 #include "gravitypotential.hpp"
+#include "ljpotential.hpp"
 #include "velocityverlet.hpp"
 #include "observer.hpp"
 
@@ -35,7 +36,7 @@ int main(int argc, char *argv[]) {
 
 
     // instanciate Potential
-    GravityPotential Pot;
+    LjPotential Pot;
 
     // create World
     World W;
