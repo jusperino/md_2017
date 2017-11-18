@@ -1,2 +1,0 @@
-    // instanciate Potential
-    LjPotential Pot;
