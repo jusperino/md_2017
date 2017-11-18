@@ -55,7 +55,13 @@ void Observer::output_coordinates()
 		<< W.t << "\t";
 		for (int i = 0; i<W.particles.size(); i++){
 			coordinates << W.particles[i].x[0] << "\t"
-						<< W.particles[i].x[1] << "\t"
+						<< W.particles[i].x[1] << "\t";
+			// check if there is a third coordinate to enter, else enter 0 in order to be applicable for both DIM 2 and DIM 3
+			if (DIM == 3){
+			coordinates << W.particles[i].x[2] << "\n"
+				<< std::endl;
+			}
+			else coordinates << 0 << "\n" << std::endl;
                         /*<< W.particles[i].v[0] << "\t"
                         << W.particles[i].v[1] << "\t"
                         << W.particles[i].F[0] << "\t"
