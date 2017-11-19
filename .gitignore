@@ -4,3 +4,5 @@
 blatt1
 *.csv
 *.statistics
+*.parameter
+*.particles
