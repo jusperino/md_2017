@@ -3,12 +3,11 @@
 #include <cstdio>
 
 #include "world.hpp"
-#include "gravitypotential.hpp"
 #include "ljpotential.hpp"
 #include "velocityverlet.hpp"
 #include "observer.hpp"
 
-void debug(World &W, GravityPotential &Pot, int a, int b) {
+void debug(World &W, LjPotential &Pot, int a, int b) {
 	std::string p1 = W.particles[a].id;
 	std::string p2 = W.particles[b].id;
 	std::cout << "Distance between " << p1 <<  " and " << p2 << ": "  << Pot.distance(W.particles[a], W.particles[b]) << std::endl;
