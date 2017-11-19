@@ -9,7 +9,7 @@
 MAIN = blatt1.exe
 
 # define the C source files
-SRCS = blatt1.cpp world.cpp timediscretization.cpp gravitypotential.cpp velocityverlet.cpp observer.cpp
+SRCS = blatt1.cpp world.cpp timediscretization.cpp ljpotential.cpp velocityverlet.cpp observer.cpp
 
 # define the C compiler to use
 CC = g++
