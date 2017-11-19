@@ -53,7 +53,7 @@ void Observer::output_coordinates()
 {
     coordinates
 		<< W.t << "\t";
-		for (int i = 0; i<W.particles.size(); ++i){
+		for (size_t i = 0; i<W.particles.size(); ++i){
 			coordinates << W.particles[i].x[0] << "\t"
 						<< W.particles[i].x[1] << "\t";
 			// check if there is a third coordinate to enter, else enter 0 in order to be applicable for both DIM 2 and DIM 3
