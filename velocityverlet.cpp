@@ -100,9 +100,8 @@ void VelocityVerlet::handle_borders() {
 
     while (it != W.particles.end()) {
         bool removed = false;
-        auto &p = *it;
         for (int i = 0; i<DIM; ++i){
-            if (p.x[i] > W.length[i]) {
+            if (((*it).x[i] > W.length[i]) || ((*it).x[i] < 0 )) {
                 it = W.particles.erase(it);
                 removed = true;
                 break;
