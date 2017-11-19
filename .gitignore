@@ -6,3 +6,4 @@ blatt1
 *.statistics
 *.parameter
 *.particles
+*.xyz
