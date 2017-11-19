@@ -12,7 +12,7 @@ real LjPotential::force(Particle &p, Particle &q) {
     real potential = 4 * epsilon * pow(signum/dist,6) * (pow(signum/dist,6) -1);
 
 	//berechnet richtungsunabhängigen Vorfaktor
-    real factor=24 * epsilon * sqr(1/dist) * pow(signum/dist,6) * (1 - 2*pow(signum/dist,6));
+    real factor = 24 * epsilon * sqr(1/dist) * pow(signum/dist,6) * (1 - 2*pow(signum/dist,6));
 
     //calculate additional Force vector by looping over the dimensions
 	for (int i = 0; i<DIM; i++) {
