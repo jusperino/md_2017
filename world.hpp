@@ -3,6 +3,7 @@
 
 #include "defines.hpp"
 #include "particle.hpp"
+#include "cell.hpp"
 #include <vector>
 #include <string>
 #include <iostream>
@@ -38,6 +39,13 @@ public:
      */
     void read_Particles(const std::string &filename);
 
+    /**
+    * @brief write particle into cell according to coordinates
+    *
+    * @param p particle to be stored in cell
+    */
+    void fill_Cell(const Particle p);
+
     // data structures
     /// Name of the simulated world
     std::string name;
@@ -59,8 +67,19 @@ public:
     real e_pot;
     /// total energy
     real e_tot;
-    /// Vector of particles
-    std::vector<Particle> particles;
+    /*
+     *	/// Vector of particles
+     *	std::vector<Particle> particles;
+     **/
+    /// cells
+    std::vector<Cell> cells;
+    /// Number of cells in every dimension
+    int cell_N[DIM];
+    /// length of cells
+    real cell_length[DIM];
+    /// r_cut used for calculation of the cell length
+    real cell_r_cut;
+
 };
 
 /**
