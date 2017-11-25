@@ -1,4 +1,5 @@
 #include "world.hpp"
+#include "cell.hpp"
 #include <stdexcept>
 #include <sstream>
 #include <string>
@@ -75,6 +76,24 @@ void World::read_Parameter(const std::string &filename) {
     parfile.close();
 }
 
+void World::fill_Cell(const Particle p){
+	// calculate cell coordinates
+	int j[DIM];
+	for (size_t i = 0; i < DIM; i++){
+		j[i] = p.x[i]/cell_length[i] - p.x[i]%cell_length[i];
+	}
+
+	// calculate cell index
+	int J = j[0];
+	for(size_t i = 1; i < DIM; i++){
+		J *= cell_N[i];
+		J += j[i];
+	}
+
+	// store particle in correct cell
+	cells[J].particles.push_back(p);
+}
+
 void World::read_Particles(const std::string &filename) {
      // create input filestream
     std::ifstream parfile(filename.c_str());
@@ -123,8 +142,8 @@ void World::read_Particles(const std::string &filename) {
                 p.F[i] = 0;
             }
 
-            // store initiated particle
-            particles.push_back(p);
+            // store initiated particle in cell
+            fill_Cell(p);
         }
     }
     // close file
