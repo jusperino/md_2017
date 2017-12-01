@@ -107,6 +107,9 @@ void World::read_Particles(const std::string &filename) {
     // helper strings
     std::string line, data;
 
+    // set particle counter to zero
+    particle_count = 0;
+
     // read file till eof
     while (parfile.good())
     {
@@ -144,6 +147,7 @@ void World::read_Particles(const std::string &filename) {
 
             // store initiated particle in cell
             fill_Cell(p);
+            particle_count++;
         }
     }
     // close file

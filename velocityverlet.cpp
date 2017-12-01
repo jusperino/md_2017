@@ -17,7 +17,7 @@ void VelocityVerlet::simulate() {
 	handle_borders();
 
     // simulate over set timeperiod as long as particles are left
-    while (W.t < W.t_end && W.particles.size() != 0) {
+    while (W.t < W.t_end && W.particle_count != 0) {
         timestep(W.delta_t);
     }
 }
@@ -104,6 +104,7 @@ void VelocityVerlet::handle_borders() {
             if (((*it).x[i] > W.length[i]) || ((*it).x[i] < 0 )) {
                 it = W.particles.erase(it);
                 removed = true;
+                W.particle_count--;
                 break;
             }
         }
