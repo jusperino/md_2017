@@ -92,7 +92,7 @@ void VelocityVerlet::update_X() {
 
 void VelocityVerlet::handle_borders() {
     // check if any particle has left the simulation area
-    // if so, remove the particle entirely from the storage vector
+    // if so, remove the particle entirely from the storage vector and inform particle counter
     auto it = W.particles.begin();
 
     // loop over the particles with an iterator
