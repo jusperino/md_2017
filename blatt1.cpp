@@ -7,6 +7,7 @@
 #include "velocityverlet.hpp"
 #include "observer.hpp"
 
+
 void debug(World &W, GravityPotential &Pot, int a, int b) {
 	std::string p1 = W.particles[a].id;
 	std::string p2 = W.particles[b].id;
@@ -53,12 +54,12 @@ int main(int argc, char *argv[]) {
   // print_particle(W.particles[0]);
 
   //std::cout << W.particles[1].id << std::endl;
-  
-  
+
+
   // create the Observer
   Observer O(W);
 
-  // instanciate timediscretization 
+  // instanciate timediscretization
   // remark: & is used to get the address of Pot
   VelocityVerlet Verlet(W, &Pot, O);
 
