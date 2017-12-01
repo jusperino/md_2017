@@ -79,6 +79,8 @@ public:
     real cell_length[DIM];
     /// r_cut used for calculation of the cell length
     real cell_r_cut;
+    /// number of currently simulated particles
+    int particle_count;
 
 };
 
