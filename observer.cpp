@@ -51,22 +51,17 @@ void Observer::output_statistics()
 
 void Observer::output_coordinates()
 {
-    coordinates
-		<< W.t << "\t";
-		for (size_t i = 0; i<W.particles.size(); ++i){
-			coordinates << W.particles[i].x[0] << "\t"
-						<< W.particles[i].x[1] << "\t";
-			// check if there is a third coordinate to enter, else enter 0 in order to be applicable for both DIM 2 and DIM 3
-			if (DIM == 3){
-			coordinates << W.particles[i].x[2] << "\n"
-				<< std::endl;
+    coordinates << W.t << "\t";
+		for (auto &cell: W.cells){
+            for (size_t j = 0; j<cell.particles.size(); ++j){
+			coordinates << cell.particles[j].x[0] << "\t"
+						<< cell.particles[j].x[1] << "\t";
+            // check if there is a third coordinate to enter, else enter 0 in order to be applicable for both DIM 2 and DIM 3
+            if (DIM == 3){
+                coordinates << cell.particles[j].x[2] << "\n" << std::endl;
 			}
 			else coordinates << 0 << "\n" << std::endl;
-                        /*<< W.particles[i].v[0] << "\t"
-                        << W.particles[i].v[1] << "\t"
-                        << W.particles[i].F[0] << "\t"
-                        << W.particles[i].F[1] << "\t"
-                        << " | " << "\t"*/;
+            }
 		}
     coordinates << std::endl;
 }
@@ -75,24 +70,25 @@ void Observer::output_xyz()
 {
     // write configuration of particles into the filestream, according to .xyz-format
     xyz
-		// number of atoms
-        << W.particles.size() << "\n"
-		// comment line
-        << "Zeit: " << W.t << "\n";
-    	// x,y,z coordinates
-		for (size_t i = 0; i<W.particles.size(); i++){
-			// element (here: "H" for every particle)
-	        xyz << "H" << "\t"
-				<< W.particles[i].x[0] << "\t"
-				<< W.particles[i].x[1] << "\t";
-
-			// check if there is a third coordinate to enter, else enter 0 in order to be applicable for both DIM 2 and DIM 3
-			if (DIM == 3){
-				xyz << W.particles[i].x[2]
-					<< std::endl;
-			}
-			else xyz << 0 << std::endl;
-		}
+    // number of atoms
+    << W.particle_count << "\n"
+    // comment line
+    << "Zeit: " << W.t << "\n";
+    // x,y,z coordinates
+    for (auto &cell: W.cells){
+        for (size_t j = 0; j<cell.particles.size(); ++j){
+            // element (here: "H" for every particle)
+            xyz << "H" << "\t"
+                << cell.particles[j].x[0] << "\t"
+                << cell.particles[j].x[1] << "\t";
+            // check if there is a third coordinate to enter, else enter 0 in order to be applicable for both DIM 2 and DIM 3
+            if (DIM == 3){
+                xyz << cell.particles[j].x[2]
+                    << std::endl;
+            }
+            else xyz << 0 << std::endl;
+        }
+    }
 }
 
 void Observer::notify()
