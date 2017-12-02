@@ -47,7 +47,6 @@ void VelocityVerlet::timestep(real delta_t) {
 }
 
 void VelocityVerlet::comp_F() {
-    //TODO: get neighboring cells
 
 	// set potential energy to 0 in respect of conservation of energy
 	W.e_pot = 0;
@@ -55,7 +54,7 @@ void VelocityVerlet::comp_F() {
 	// calculate forces of particles pairwise and sum up potential energy
     for (auto &cell: W.cells){
 		for (auto &p: cell.particles){
-            for (int i=0; i<DIM; ++d){
+            for (int i=0; i<DIM; ++i){
                 p.F[i] = 0;
             }
             for
