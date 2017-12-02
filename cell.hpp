@@ -14,7 +14,9 @@
 
 class Cell{
 public:
-
+    /// vector containing the indices of adjacent cells
+    /// precomputed during World initialisation
+	std::vector<int> adj_cells;
 	/// The cell contains particles ...
 	std::vector<Particle> particles;
 };

@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <sstream>
 #include <string>
+#include <cmath>
 
 World::World() : name("unknown"),t(0),delta_t(0),t_end(0),e_kin(0),e_pot(0),e_tot(0)
 {
@@ -70,10 +71,101 @@ void World::read_Parameter(const std::string &filename) {
                 }
             }
         }
+
+        if (option=="cell_r_cut"){
+            strstr >> cell_r_cut;
+        }
         option="";
     }
+
+    // calculate cell division parameters from freshly read r_cut
+
+    int cell_count = 0;
+    for (int i=0; i<DIM; ++i){
+        cell_N[i] = floor(length[i]/cell_r_cut);
+        cell_count *= cell_N[i];
+        cell_length[i] = length[i]/cell_N[i];
+    }
+
+    // construct the grid by creating N1*N2(*N3) empty cells and adding them to the cells vector
+    cells.resize(cell_count);
+
+    // (hideously) generate the set of neighbour cells for each cell (thankfully only once)
+
+    std::vector<std:vector<int>> displacement;
+
+    int k = 0;
+    for (int j1 = -1; j1<2; ++j1) {
+        for (int j2 = -1; j2<2; ++j2) {
+            if (DIM == 3){
+                for (int j3 = -1; j3<2; ++j3) {
+                    std::vector<int> comb;
+                    comb[0] = j1;
+                    comb[1] = j2;
+                    comb[2] = j3;
+                    displacement.push_back(comb);
+                }
+            } else {
+                std::vector<int> comb;
+                comb[0] = j1;
+                comb[1] = j2;
+                displacement.push_back(comb);
+            }
+        }
+    }
+
+    for (int j1 = 0; j1<cell_N[i]; ++j1) {
+        for (int j2 = 0; j2<cell_N[i]; ++j2) {
+            if (DIM == 3){
+                for (int j3 = 0; j3<cell_N[i]; ++j3) {
+                    std::vector<int> nborcand;
+                    for (auto &disp: displacement) {
+                        nborcand[0] = j1+dist[0];
+                        nborcand[1] = j2+dist[1];
+                        nborcand[2] = j3+dist[2];
+                        bool valid = true;
+                        for (int i = 0; i<DIM; ++i){
+                            if (nborcand[i] < 0 || nborcand > ) {
+                                valid = false;
+                            }
+                        }
+                        if (valid) {
+                            std::vector<int> v = {j1,j2,j3};
+                            cells[get_cell_index(v)].adj_cells.push_back(get_cell_index(nborcand));
+                        }
+                    }
+                }
+            } else {
+                for (auto &disp: displacement) {
+                    std::vector<int> nborcand;
+                    nborcand[0] = j1+dist[0];
+                    nborcand[1] = j2+dist[1];
+                    bool valid = true;
+                    for (int i = 0; i<DIM; ++i){
+                        if (nborcand[i] < 0 || nborcand > ) {
+                            valid = false;
+                        }
+                    }
+                    if (valid) {
+                        std::vector<int> v = {j1,j2};
+                        cells[get_cell_index(v)].adj_cells.push_back(get_cell_index(nborcand));
+                    }
+                }
+            }
+        }
+    }
+
     // close file
     parfile.close();
+}
+
+int get_cell_index(const std::vector<int> &j) {
+    int J = j[0];
+	for(size_t i = 1; i < DIM; i++){
+		J *= cell_N[i];
+		J += j[i];
+	}
+	return(J)
 }
 
 void World::fill_Cell(const Particle p){
@@ -84,11 +176,7 @@ void World::fill_Cell(const Particle p){
 	}
 
 	// calculate cell index
-	int J = j[0];
-	for(size_t i = 1; i < DIM; i++){
-		J *= cell_N[i];
-		J += j[i];
-	}
+    int J = get_cell_index(j);
 
 	// store particle in correct cell
 	cells[J].particles.push_back(p);
@@ -160,11 +248,10 @@ std::ostream& operator << (std::ostream& os, World& W) {
     std::stringstream str_length, str_upper_border, str_lower_border;
 
 
-    for (int i=0;i<DIM;i++)
-    {
-	str_length << "length["<<i<<"]=" << W.length[i]<< " ";
-	str_upper_border << "upper_border["<<i<<"]=" << W.upper_border[i]<< " ";
-	str_lower_border << "lower_border["<<i<<"]=" << W.lower_border[i]<< " ";
+    for (int i=0;i<DIM;i++) {
+        str_length << "length["<<i<<"]=" << W.length[i]<< " ";
+        str_upper_border << "upper_border["<<i<<"]=" << W.upper_border[i]<< " ";
+        str_lower_border << "lower_border["<<i<<"]=" << W.lower_border[i]<< " ";
     }
     os << str_length.str() << std::endl << str_upper_border.str() << std::endl << str_lower_border.str() << std::endl;
     return os;

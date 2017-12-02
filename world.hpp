@@ -40,6 +40,13 @@ public:
     void read_Particles(const std::string &filename);
 
     /**
+     * @brief calculate index of cell from dimension-wise indices
+     *
+     * @param vector of dimension-wise indices
+     */
+    int get_cell_index(const std::vector<int> j);
+
+    /**
     * @brief write particle into cell according to coordinates
     *
     * @param p particle to be stored in cell
