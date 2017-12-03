@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
 
     //std::cout << W.cells[16].adj_cells.size() <<std::endl;
 
-    for (auto &j: W.cells[9].adj_cells){
+    for (auto &j: W.cells[35].adj_cells){
         std::cout << j << std::endl;
     }
 

@@ -93,10 +93,16 @@ void World::read_Parameter(const std::string &filename) {
         cells.push_back(c);
     }
 
+    generate_adj_cells()
 
+    // close file
+    parfile.close();
+}
+
+void World::generate_adj_cells(){
     // (hideously) generate the set of neighbour cells for each cell (thankfully only once)
 
-
+    //start by constructing the dimensional indices of the neighbours relative to a specified cell (e.g. {-1,-1,0}, {1,0,-1} etc
     std::vector<std::vector<int>> displacement;
 
     for (int j1 = -1; j1<2; ++j1) {
@@ -119,29 +125,33 @@ void World::read_Parameter(const std::string &filename) {
     }
 
 
+    // using these displacement vectors, calculate the neighbours
     for (int j1 = 0; j1<cell_N[0]; ++j1) {
         for (int j2 = 0; j2<cell_N[1]; ++j2) {
             if (DIM == 3){
                 for (int j3 = 0; j3<cell_N[2]; ++j3) {
+                    // consider each cell using these loops
                     std::vector<int> v(3,0);
                             v[0] = j1;
                             v[1] = j2;
                             v[2] = j3;
                     int J = get_cell_index(v);
-                    //std::cout << v[0] << " " << v[1] << " " << v[2] <<std::endl;
-                    //std::cout << J << std::endl;
+
                     std::vector<int> nborcand(3,0);
                     for (auto &disp: displacement) {
+                        // calculate dim-indices of neighbour-candidates
                         nborcand[0] = j1+disp[0];
                         nborcand[1] = j2+disp[1];
                         nborcand[2] = j3+disp[2];
                         bool valid = true;
                         for (int i = 0; i<DIM; ++i){
-                            if (nborcand[i] < 0 || nborcand[i] > cell_N[i]) {
+                            //check whether the neighbour is a valid cell (if in any dimension the index is greater than the no of cells in that direction, it cannot be valid)
+                            if (nborcand[i] < 0 || nborcand[i] > cell_N[i]-1) {
                                 valid = false;
                             }
                         }
                         if (valid) {
+                            // add sequential cell index to list of neighbours of that particular cell
                             cells[J].adj_cells.push_back(get_cell_index(nborcand));
                         }
                     }
@@ -165,12 +175,10 @@ void World::read_Parameter(const std::string &filename) {
             }
         }
     }
-
-    // close file
-    parfile.close();
 }
 
 bool World::check_if_outside(Particle &p) {
+    // given a particle, check if it is within the simulation area
     bool discard = false;
     for (int i = 0; i<DIM; ++i) {
         if (((p.x[i] >= length[i]) && (upper_border[i] == leaving)) || (((p.x[i] < 0 )) && (lower_border[i] == leaving))) {
@@ -181,6 +189,7 @@ bool World::check_if_outside(Particle &p) {
 }
 
 int World::get_cell_index(std::vector<int> &j) {
+    // calculate sequential cell index from dimension-wise indices
     int J = j[0];
 	for(size_t i = 1; i < DIM; ++i){
 		J *= cell_N[i];

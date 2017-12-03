@@ -40,6 +40,13 @@ public:
     void read_Particles(const std::string &filename);
 
     /**
+     * @brief for each cell, generate and store a list of its adjacent cells
+     *
+     * @param none
+     */
+    void generate_adj_cells()
+
+    /**
      * @brief returns true if the particle is outside the simulation area
      *
      * @param particle to check
