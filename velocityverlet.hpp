@@ -57,10 +57,6 @@ public:
      */
     virtual void update_X();
 
-    /**
-     * @brief remove all particles that are outside the sim area
-     */
-    virtual void handle_borders();
 
 protected:
     // data structures inherited from TimeDiscretization
