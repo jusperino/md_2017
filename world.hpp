@@ -40,11 +40,18 @@ public:
     void read_Particles(const std::string &filename);
 
     /**
+     * @brief returns true if the particle is outside the simulation area
+     *
+     * @param particle to check
+     */
+    bool check_if_outside(Particle &p);
+
+    /**
      * @brief calculate index of cell from dimension-wise indices
      *
      * @param vector of dimension-wise indices
      */
-    int get_cell_index(const std::vector<int> j);
+    int get_cell_index(std::vector<int> &j);
 
     /**
     * @brief write particle into cell according to coordinates

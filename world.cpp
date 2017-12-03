@@ -80,7 +80,7 @@ void World::read_Parameter(const std::string &filename) {
 
     // calculate cell division parameters from freshly read r_cut
 
-    int cell_count = 0;
+    int cell_count = 1;
     for (int i=0; i<DIM; ++i){
         cell_N[i] = floor(length[i]/cell_r_cut);
         cell_count *= cell_N[i];
@@ -88,25 +88,29 @@ void World::read_Parameter(const std::string &filename) {
     }
 
     // construct the grid by creating N1*N2(*N3) empty cells and adding them to the cells vector
-    cells.resize(cell_count);
+    for (int i = 0; i<cell_count; ++i) {
+        Cell c;
+        cells.push_back(c);
+    }
+
 
     // (hideously) generate the set of neighbour cells for each cell (thankfully only once)
 
-    std::vector<std:vector<int>> displacement;
 
-    int k = 0;
+    std::vector<std::vector<int>> displacement;
+
     for (int j1 = -1; j1<2; ++j1) {
         for (int j2 = -1; j2<2; ++j2) {
             if (DIM == 3){
                 for (int j3 = -1; j3<2; ++j3) {
-                    std::vector<int> comb;
+                    std::vector<int> comb(3);
                     comb[0] = j1;
                     comb[1] = j2;
                     comb[2] = j3;
                     displacement.push_back(comb);
                 }
             } else {
-                std::vector<int> comb;
+                std::vector<int> comb(3);
                 comb[0] = j1;
                 comb[1] = j2;
                 displacement.push_back(comb);
@@ -114,35 +118,42 @@ void World::read_Parameter(const std::string &filename) {
         }
     }
 
-    for (int j1 = 0; j1<cell_N[i]; ++j1) {
-        for (int j2 = 0; j2<cell_N[i]; ++j2) {
+
+    for (int j1 = 0; j1<cell_N[0]; ++j1) {
+        for (int j2 = 0; j2<cell_N[1]; ++j2) {
             if (DIM == 3){
-                for (int j3 = 0; j3<cell_N[i]; ++j3) {
-                    std::vector<int> nborcand;
+                for (int j3 = 0; j3<cell_N[2]; ++j3) {
+                    std::vector<int> v(3,0);
+                            v[0] = j1;
+                            v[1] = j2;
+                            v[2] = j3;
+                    int J = get_cell_index(v);
+                    //std::cout << v[0] << " " << v[1] << " " << v[2] <<std::endl;
+                    //std::cout << J << std::endl;
+                    std::vector<int> nborcand(3,0);
                     for (auto &disp: displacement) {
-                        nborcand[0] = j1+dist[0];
-                        nborcand[1] = j2+dist[1];
-                        nborcand[2] = j3+dist[2];
+                        nborcand[0] = j1+disp[0];
+                        nborcand[1] = j2+disp[1];
+                        nborcand[2] = j3+disp[2];
                         bool valid = true;
                         for (int i = 0; i<DIM; ++i){
-                            if (nborcand[i] < 0 || nborcand > ) {
+                            if (nborcand[i] < 0 || nborcand[i] > cell_N[i]) {
                                 valid = false;
                             }
                         }
                         if (valid) {
-                            std::vector<int> v = {j1,j2,j3};
-                            cells[get_cell_index(v)].adj_cells.push_back(get_cell_index(nborcand));
+                            cells[J].adj_cells.push_back(get_cell_index(nborcand));
                         }
                     }
                 }
             } else {
                 for (auto &disp: displacement) {
-                    std::vector<int> nborcand;
-                    nborcand[0] = j1+dist[0];
-                    nborcand[1] = j2+dist[1];
+                    std::vector<int> nborcand(2,0);
+                    nborcand[0] = j1+disp[0];
+                    nborcand[1] = j2+disp[1];
                     bool valid = true;
                     for (int i = 0; i<DIM; ++i){
-                        if (nborcand[i] < 0 || nborcand > ) {
+                        if (nborcand[i] < 0 || nborcand[i] > cell_N[i]) {
                             valid = false;
                         }
                     }
@@ -159,24 +170,36 @@ void World::read_Parameter(const std::string &filename) {
     parfile.close();
 }
 
-int get_cell_index(const std::vector<int> &j) {
+bool World::check_if_outside(Particle &p) {
+    bool discard = false;
+    for (int i = 0; i<DIM; ++i) {
+        if (((p.x[i] >= length[i]) && (upper_border[i] == leaving)) || (((p.x[i] < 0 )) && (lower_border[i] == leaving))) {
+            discard = true;
+        }
+    }
+    return(discard);
+}
+
+int World::get_cell_index(std::vector<int> &j) {
     int J = j[0];
-	for(size_t i = 1; i < DIM; i++){
+	for(size_t i = 1; i < DIM; ++i){
 		J *= cell_N[i];
 		J += j[i];
 	}
-	return(J)
+	return(J);
 }
 
 void World::fill_Cell(const Particle p){
 	// calculate cell coordinates
-	int j[DIM];
-	for (size_t i = 0; i < DIM; i++){
-		j[i] = p.x[i]/cell_length[i] - p.x[i]%cell_length[i];
+	std::vector<int> j(DIM,0);
+	for (size_t i = 0; i < DIM; ++i){
+		j[i] = std::floor(p.x[i]/cell_length[i]);
 	}
 
+    std::cout << j[0] << " " << j[1] << " " << j[2] <<std::endl;
 	// calculate cell index
     int J = get_cell_index(j);
+    std::cout << J << std::endl;
 
 	// store particle in correct cell
 	cells[J].particles.push_back(p);
@@ -233,9 +256,11 @@ void World::read_Particles(const std::string &filename) {
                 p.F[i] = 0;
             }
 
-            // store initiated particle in cell
-            fill_Cell(p);
-            particle_count++;
+            // store initiated particle in cell if it is not outside the sim area
+            if (check_if_outside(p) == false) {
+                fill_Cell(p);
+                particle_count++;
+            }
         }
     }
     // close file
@@ -243,7 +268,7 @@ void World::read_Particles(const std::string &filename) {
 }
 
 std::ostream& operator << (std::ostream& os, World& W) {
-    os << "t=" << W.t << " delta_t=" << W.delta_t << " t_end=" << W.t_end <<" Number of Particles=" << W.particles.size()<< std::endl;
+    os << "t=" << W.t << " delta_t=" << W.delta_t << " t_end=" << W.t_end <<" Number of Particles=" << W.particle_count<< std::endl;
 
     std::stringstream str_length, str_upper_border, str_lower_border;
 
