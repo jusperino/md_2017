@@ -36,8 +36,16 @@ int main(int argc, char *argv[]) {
     // read Parameters
     W.read_Parameter(argv[1]);
 
+    std::cout << "No of cells: " << W.cells.size() << std::endl;
+
     // read Particles
     W.read_Particles(argv[2]);
+
+    //std::cout << W.cells[16].adj_cells.size() <<std::endl;
+
+    for (auto &j: W.cells[9].adj_cells){
+        std::cout << j << std::endl;
+    }
 
     // print World configuration
     std::cout << W << std::endl;
@@ -58,9 +66,7 @@ int main(int argc, char *argv[]) {
     // run the simulation
     Verlet.simulate();
 
-    /*for(auto p: W.particles){
-    print_particle(p);
-    }*/
+    //std::cout << W.cell_N[0] <<std::endl;
 
 
     return EXIT_SUCCESS;
