@@ -44,7 +44,7 @@ public:
      *
      * @param none
      */
-    void generate_adj_cells()
+    void generate_adj_cells();
 
     /**
      * @brief returns true if the particle is outside the simulation area
@@ -61,11 +61,18 @@ public:
     int get_cell_index(std::vector<int> &j);
 
     /**
+     * @brief determine the sequential index of the cell that a particle should belong to
+     *
+     * @param particle to check
+     */
+    int determine_corr_cell(const Particle &p);
+
+    /**
     * @brief write particle into cell according to coordinates
     *
     * @param p particle to be stored in cell
     */
-    void fill_Cell(const Particle p);
+    void fill_Cell(const Particle &p);
 
     // data structures
     /// Name of the simulated world

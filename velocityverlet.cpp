@@ -26,6 +26,8 @@ void VelocityVerlet::timestep(real delta_t) {
 
     // calculate position
     update_X();
+    // sort particles into correct cell according to new position
+    update_Cells();
     // calculate forces
     comp_F();
     // calculate velocity
@@ -96,6 +98,21 @@ void VelocityVerlet::update_X() {
             } else {
                 p = cell.particles.erase(p);
                 W.particle_count--;
+            }
+        }
+    }
+}
+
+void VelocityVerlet::update_Cells() {
+    for (int J = 0; J<W.cells.size(); ++J){
+        auto p = W.cells[J].particles.begin();
+        while (p!= W.cells[J].particles.end()){
+            int new_cell_index = W.determine_corr_cell(*p);
+            if (J == new_cell_index) {
+                ++p;
+            } else {
+                W.cells[new_cell_index].particles.push_back(*p);
+                p = W.cells[J].particles.erase(p);
             }
         }
     }

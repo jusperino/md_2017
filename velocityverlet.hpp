@@ -57,6 +57,11 @@ public:
      */
     virtual void update_X();
 
+    /**
+     * @brief sort all particles into their correct cells
+     */
+    virtual void update_Cells();
+
 
 protected:
     // data structures inherited from TimeDiscretization

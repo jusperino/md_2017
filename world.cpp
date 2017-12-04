@@ -93,7 +93,7 @@ void World::read_Parameter(const std::string &filename) {
         cells.push_back(c);
     }
 
-    generate_adj_cells()
+    generate_adj_cells();
 
     // close file
     parfile.close();
@@ -198,17 +198,19 @@ int World::get_cell_index(std::vector<int> &j) {
 	return(J);
 }
 
-void World::fill_Cell(const Particle p){
-	// calculate cell coordinates
-	std::vector<int> j(DIM,0);
+int World::determine_corr_cell(const Particle &p) {
+    // calculate cell coordinates
+    std::vector<int> j(DIM,0);
 	for (size_t i = 0; i < DIM; ++i){
 		j[i] = std::floor(p.x[i]/cell_length[i]);
 	}
 
-    std::cout << j[0] << " " << j[1] << " " << j[2] <<std::endl;
+	return get_cell_index(j);
+}
+
+void World::fill_Cell(const Particle &p){
 	// calculate cell index
-    int J = get_cell_index(j);
-    std::cout << J << std::endl;
+    int J = determine_corr_cell(p);
 
 	// store particle in correct cell
 	cells[J].particles.push_back(p);
