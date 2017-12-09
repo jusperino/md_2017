@@ -151,8 +151,17 @@ void World::generate_adj_cells(){
                         nborcand[2] = j3+disp[2];
                         bool valid = true;
                         for (int i = 0; i<DIM; ++i){
-                            //check whether the neighbour is a valid cell (if in any dimension the index is greater than the no of cells in that direction, it cannot be valid)
-                            if (nborcand[i] < 0 || nborcand[i] > cell_N[i]-1) {
+
+                        	// check if lower_border, upper_border is set "periodic" and adjust dim-indices of neighbor candidates
+                        	if (lower_border[i] == periodic && nborcand[i] < 0){
+                        		nborcand[i] += cell_N[i];
+                        	}
+                        	if (lower_border[i] == periodic && nborcand[i] > cell_N[i]-1){
+                        		nborcand[i] -= cell_N[i];
+                        	}
+
+                            //check whether the neighbor is a valid cell in case border type is not periodic (if in any dimension the index is greater than the no of cells in that direction, it cannot be valid)
+                        	else if (nborcand[i] < 0 || nborcand[i] > cell_N[i]-1) {
                                 valid = false;
                             }
                         }
@@ -169,6 +178,16 @@ void World::generate_adj_cells(){
                     nborcand[1] = j2+disp[1];
                     bool valid = true;
                     for (int i = 0; i<DIM; ++i){
+
+                    	// check if lower_border, upper_border is set "periodic" and adjust dim-indices of neighbor candidates
+                    	if (lower_border[i] == periodic && nborcand[i] < 0){
+                    		nborcand[i] += cell_N[i];
+                    	}
+                    	if (lower_border[i] == periodic && nborcand[i] > cell_N[i]-1){
+                    		nborcand[i] -= cell_N[i];
+                    	}
+
+                    	//check whether the neighbor is a valid cell in case border type is not periodic (if in any dimension the index is greater than the no of cells in that direction, it cannot be valid)
                         if (nborcand[i] < 0 || nborcand[i] > cell_N[i]) {
                             valid = false;
                         }
