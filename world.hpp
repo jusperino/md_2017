@@ -10,7 +10,7 @@
 #include <fstream>
 
 ///Border Type
-enum BorderType{unknown = 0, leaving = 1};
+enum BorderType{unknown = 0, leaving = 1, periodic = 2};
 
 /**
  * @brief the world class holds all information of the simulation environment
