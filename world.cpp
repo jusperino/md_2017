@@ -51,11 +51,14 @@ void World::read_Parameter(const std::string &filename) {
         if (option=="upper_border"){
             for (int i=0;i<DIM;i++){
                 strstr >> value;
-                if (value=="leaving"){
+                if (value=="unknown"){
+                    upper_border[i]=unknown;
+                }
+                else if (value == "leaving"){
                     upper_border[i]=leaving;
                 }
                 else{
-                    upper_border[i]=unknown;
+                	upper_border[i]=periodic;
                 }
             }
         }
@@ -63,11 +66,14 @@ void World::read_Parameter(const std::string &filename) {
         if (option=="lower_border"){
             for (int i=0;i<DIM;i++){
                 strstr >> value;
-                if (value=="leaving"){
-                    lower_border[i]=leaving;
+                if (value=="unknown"){
+                	upper_border[i]=unknown;
+                }
+                else if (value == "leaving"){
+                	upper_border[i]=leaving;
                 }
                 else{
-                    lower_border[i]=unknown;
+                	upper_border[i]=periodic;
                 }
             }
         }
