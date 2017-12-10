@@ -2,6 +2,7 @@
 #define _POTENTIAL_HPP
 
 #include "particle.hpp"
+#include "world.hpp"
 #include <cmath>
 
 /**
