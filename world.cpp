@@ -4,6 +4,7 @@
 #include <sstream>
 #include <string>
 #include <cmath>
+#include <algorithm>
 
 World::World() : name("unknown"),t(0),delta_t(0),t_end(0),e_kin(0),e_pot(0),e_tot(0)
 {
@@ -301,6 +302,27 @@ void World::read_Particles(const std::string &filename) {
     }
     // close file
     parfile.close();
+}
+
+real World::distance_DIM(Particle &p, Particle &q, int dim){
+	// distance respecting periodic lower border, initialized with maximal distance since smallest calculated distance will be returned
+	real dist_lower = length[dim];
+	// distance respecting periodic upper border, initialized with maximal distance since smallest calculated distance will be returned
+	real dist_upper = length[dim];
+	// distance without consideration of BorderType
+	real dist = abs(p.x[dim] - q.x[dim]);
+
+	// calculate dist_lower, dist_upper if BorderType is set "periodic"
+	if (lower_border[dim] == periodic){
+		dist_lower = std::min(p.x[dim], q.x[dim]) + length[dim] - std::max(p.x[dim], q.x[dim]);
+	}
+
+	if (upper_border[dim] == periodic){
+		dist_upper = std::max(p.x[dim], q.x[dim]) + length[dim] - std::min(p.x[dim], q.x[dim]);
+	}
+
+	// return smallest calculated distance
+	return std::min(dist_lower, dist_upper, dist);
 }
 
 std::ostream& operator << (std::ostream& os, World& W) {
