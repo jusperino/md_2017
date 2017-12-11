@@ -27,11 +27,11 @@ int main(int argc, char *argv[]) {
     }
 
 
-    // instantiate Potential
-    LjPotential Pot;
-
     // create World
     World W;
+
+    // instantiate Potential
+    LjPotential Pot(W);
 
     // read Parameters
     W.read_Parameter(argv[1]);
