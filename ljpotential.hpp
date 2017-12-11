@@ -4,13 +4,16 @@
 #include "potential.hpp"
 #include <cmath>
 
-/**
- * @brief TODO add the documentation
- */
+
 class LjPotential : public Potential {
 public:
-	
-	
+
+    /**
+     * @brief constructor
+     * @param _W World to make use of potential methods
+     */
+    LjPotential(World& _W);
+
 	/**
      * @brief calculate the force between the two particles and add it to p
      *
@@ -20,6 +23,8 @@ public:
      * @return potential energy
      */
 	virtual real force(Particle &p, Particle &q);
+
+protected:
 };
 
 #endif // _LJPOTENTIAL_HPP

@@ -1,6 +1,9 @@
 #include "ljpotential.hpp"
 #include <iostream>
 
+LjPotential::LjPotential(World& _W) : Potential(_W) {
+    // empty constructor
+}
 
 real LjPotential::force(Particle &p, Particle &q) {
 
