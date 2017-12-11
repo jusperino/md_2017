@@ -59,9 +59,9 @@ void Observer::output_coordinates()
 						<< cell.particles[j].x[1] << "\t";
             // check if there is a third coordinate to enter, else enter 0 in order to be applicable for both DIM 2 and DIM 3
             if (DIM == 3){
-                coordinates << cell.particles[j].x[2] << "\n" << std::endl;
+                coordinates << cell.particles[j].x[2] << "\t";
 			}
-			else coordinates << 0 << "\n" << std::endl;
+			else coordinates << 0 << "\t";
             }
 		}
     coordinates << std::endl;

@@ -39,8 +39,7 @@ int main(int argc, char *argv[]) {
     // read Particles
     W.read_Particles(argv[2]);
 
-    /*
-    for (auto &j: W.cells[35].adj_cells){
+    /*for (auto &j: W.cells[0].adj_cells){
         std::cout << j << std::endl;
     }*/
 
