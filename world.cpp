@@ -88,7 +88,7 @@ void World::read_Parameter(const std::string &filename) {
 
     int cell_count = 1;
     for (int i=0; i<DIM; ++i){
-        cell_N[i] = floor(length[i]/cell_r_cut);
+        cell_N[i] = std::max(floor(length[i]/cell_r_cut), 1.0);
         cell_count *= cell_N[i];
         cell_length[i] = length[i]/cell_N[i];
     }
@@ -227,7 +227,7 @@ int World::determine_corr_cell(const Particle &p) {
     // calculate cell coordinates
     std::vector<int> j(DIM,0);
 	for (size_t i = 0; i < DIM; ++i){
-		j[i] = std::floor(p.x[i]/cell_length[i]);
+		j[i] = std::min(std::floor(p.x[i]/cell_length[i]), cell_N[i]-1.0);
 	}
 
 	return get_cell_index(j);
