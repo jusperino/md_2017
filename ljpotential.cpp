@@ -18,7 +18,7 @@ real LjPotential::force(Particle &p, Particle &q) {
     real factor = 24 * epsilon * sqr(1/dist) * pow(signum/dist,6) * (1 - 2*pow(signum/dist,6));
 
     //calculate additional Force vector by looping over the dimensions
-	for (int i = 0; i<DIM; i++) {
+	for (int i = 0; i<DIM; ++i) {
 		real add_force = factor * (q.x[i] - p.x[i]);
 		p.F[i] += add_force;
 	}
