@@ -67,13 +67,13 @@ void World::read_Parameter(const std::string &filename) {
             for (int i=0;i<DIM;i++){
                 strstr >> value;
                 if (value=="unknown"){
-                	upper_border[i]=unknown;
+                	lower_border[i]=unknown;
                 }
                 else if (value == "leaving"){
-                	upper_border[i]=leaving;
+                	lower_border[i]=leaving;
                 }
                 else{
-                	upper_border[i]=periodic;
+                	lower_border[i]=periodic;
                 }
             }
         }
@@ -305,7 +305,7 @@ void World::read_Particles(const std::string &filename) {
 
 
 std::ostream& operator << (std::ostream& os, World& W) {
-    os << "t=" << W.t << " delta_t=" << W.delta_t << " t_end=" << W.t_end <<" Number of Particles=" << W.particle_count<< std::endl;
+    os << "t=" << W.t << " delta_t=" << W.delta_t << " t_end=" << W.t_end <<" Number of Particles=" << W.particle_count << " Number of Cells=" << W.cells.size() << std::endl;
 
     std::stringstream str_length, str_upper_border, str_lower_border;
 
