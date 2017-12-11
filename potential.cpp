@@ -14,7 +14,7 @@ real Potential::distance_DIM(Particle &p, Particle &q, int dim){
 	// distance respecting periodic upper border, initialized with maximal distance since smallest calculated distance will be returned
 	real dist_upper = W.length[dim];
 	// distance without consideration of BorderType
-	real dist = abs(p.x[dim] - q.x[dim]);
+	real dist = std::abs(p.x[dim] - q.x[dim]);
 
 	// calculate dist_lower, dist_upper if BorderType is set "periodic"
 	if (W.lower_border[dim] == periodic){
