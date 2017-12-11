@@ -74,13 +74,6 @@ public:
     */
     void fill_Cell(const Particle &p);
 
-    /**
-    * @brief calculate distance dimension wise
-    *
-    * @param particles whose distance is to be calculated, dimension
-    */
-    real distance_DIM(Particle &p, Particle &q, int dim);
-
     // data structures
     /// Name of the simulated world
     std::string name;
