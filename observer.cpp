@@ -1,4 +1,5 @@
 #include "observer.hpp"
+#include <math.h>
 
 Observer::Observer(World &_W) : W(_W)
 {
@@ -93,8 +94,9 @@ void Observer::output_xyz()
 
 void Observer::notify()
 {
-    // debug output
-    //std::cout << "notify()" << std::endl;
+    float progress = round (10 * 100 * W.t / W.t_end)/10;
+    std::cout << "Progress: " << progress << "%" <<"\r";
+    std::cout.flush();
 
     // call output functions
     output_statistics();
