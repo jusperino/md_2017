@@ -31,7 +31,7 @@ public:
      *
      * @return absolute distance
      */
-	virtual real distance(Particle &p, Particle &q);
+	virtual real distance_2(Particle &p, Particle &q);
 
     /**
      * @brief calculate the force between the two particles and add it to p

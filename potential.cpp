@@ -30,14 +30,14 @@ real Potential::distance_DIM(Particle &p, Particle &q, int dim){
 	return std::min({std::abs(dist_lower), std::abs(dist_upper), std::abs(dist)});
 }
 
-real Potential::distance(Particle &p, Particle &q) {
+real Potential::distance_2(Particle &p, Particle &q) {
 	//calculate euclidean norm of distance vector by looping over the dimensions
 	real sqrsum = 0;
 	for (int i = 0; i<DIM; i++) {
 		real dist = distance_DIM(p, q, i);
 		sqrsum += sqr(dist);
 	}
-	return sqrt(sqrsum);
+	return sqrsum;
 }
 
 
