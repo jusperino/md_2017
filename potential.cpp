@@ -30,6 +30,28 @@ real Potential::distance_DIM(Particle &p, Particle &q, int dim){
 	return std::min({std::abs(dist_lower), std::abs(dist_upper), std::abs(dist)});
 }
 
+real Potential::distance_DIM_2(Particle &p, Particle &q, int i){
+	if (W.lower_border[i] != periodic){
+		return q.x[i] - p.x[i];
+	} else {
+		std::vector<real> distances(3,0);
+		real x_upper = q.x[i] + W.length[i];
+		real x_lower = q.x[i] - W.length[i];
+	
+		distances[0] = x_upper - p.x[i];
+		distances[1] = x_lower - p.x[i];
+		distances[2] = q.x[i] - p.x[i];
+	
+		real shortest = W.length[i];
+		for (auto &el: distances){
+			if (std::abs(el)<shortest){
+				shortest = el;
+			}
+		}
+		return (shortest);
+	}
+}
+
 real Potential::distance_2(Particle &p, Particle &q) {
 	//calculate euclidean norm of distance vector by looping over the dimensions
 	real sqrsum = 0;

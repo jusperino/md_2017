@@ -23,6 +23,8 @@ public:
     */
     real distance_DIM(Particle &p, Particle &q, int dim);
 
+    real distance_DIM_2(Particle &p, Particle &q, int i);
+
     /**
      * @brief calculate the absolute distance between the two particles
      *
