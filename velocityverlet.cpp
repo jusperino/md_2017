@@ -85,14 +85,25 @@ void VelocityVerlet::update_V() {
 void VelocityVerlet::update_X() {
 	 // update position x for each particle in each dimension
 	 // after updating position,check if particle has left sim area
-	 // if so, remove particle from storage vector
+	 // if so and BorderType is chosen "leaving", remove particle from storage vector
     for (auto &cell: W.cells){
         auto p = cell.particles.begin();
         while (p!= cell.particles.end()){
             for(size_t i = 0; i<DIM; i++){
                 (*p).x[i] = (*p).x[i] + W.delta_t * ((*p).v[i] + 0.5 / (*p).m * (*p).F[i] * W.delta_t);
+
+                // check if BorderType is set "periodic" and if so adjust coordinates
+                if(W.lower_border[i] == periodic && (*p).x[i] < 0){
+                	(*p).x[i] += W.length[i];
+                }
+
+                if(W.upper_border[i] == periodic && (*p).x[i] > W.length[i]){
+                	(*p).x[i] -= W.length[i];
+                }
+
                 (*p).F_old[i] = (*p).F[i];
             }
+            // check_if_outside also checks if BorderType is chosen "leaving"
             if (W.check_if_outside(*p) == false) {
                 ++p;
             } else {
