@@ -9,11 +9,21 @@ Potential::Potential(World& _W) : W(_W){
 }
 
 real Potential::distance_DIM(Particle &p, Particle &q, int i){
-	if (W.lower_border[i] != periodic){
+	if ((W.lower_border[i] != periodic) && (W.upper_border[i] != periodic)){
 		return q.x[i] - p.x[i];
 	} else {
-		real dist_upper = q.x[i] + W.length[i] - p.x[i];
-		real dist_lower = q.x[i] - W.length[i] - p.x[i];
+		if (W.lower_border[i] == periodic) {
+			real dist_lower = q.x[i] - W.length[i] - p.x[i];
+		} else {
+			real dist_lower = W.length[i];
+		}
+
+		if (W.upper_border[i] == periodic) {
+			real dist_upper = q.x[i] + W.length[i] - p.x[i];
+		} else {
+			real dist_upper = W.length[i];
+		}
+		
 		real dist = q.x[i] - p.x[i];
 
         real shortest = W.length[i];
