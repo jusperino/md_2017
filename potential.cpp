@@ -15,16 +15,18 @@ real Potential::distance_DIM(Particle &p, Particle &q, int i){
 	} else {
 		// if one of the borders is not periodic, make sure that the distance calculated does not make use of a non-periodic border
 		// W.length is always greater than any other distance, so it will never win the following comparisons
+		real dist_lower;
+		real dist_upper;
 		if (W.lower_border[i] == periodic) {
-			real dist_lower = q.x[i] - W.length[i] - p.x[i];
+			dist_lower = q.x[i] - W.length[i] - p.x[i];
 		} else {
-			real dist_lower = W.length[i];
+			dist_lower = W.length[i];
 		}
 
 		if (W.upper_border[i] == periodic) {
-			real dist_upper = q.x[i] + W.length[i] - p.x[i];
+			dist_upper = q.x[i] + W.length[i] - p.x[i];
 		} else {
-			real dist_upper = W.length[i];
+			dist_upper = W.length[i];
 		}
 		
 		real dist = q.x[i] - p.x[i];
@@ -34,10 +36,10 @@ real Potential::distance_DIM(Particle &p, Particle &q, int i){
 		if (std::abs(dist_lower) <= std::abs(dist_upper)){
             shortest = dist_lower;
 		} else {
-		    shortest = dist_lower;
+		    shortest = dist_upper;
 		}
 
-		if (dist < std::abs(shortest)) {
+		if (std::abs(dist) < std::abs(shortest)) {
             shortest = dist;
         }
         return shortest;
