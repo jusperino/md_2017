@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
     return EXIT_FAILURE;
     }
 
-    // test
+    // test2
 
     // create World
     World W;
