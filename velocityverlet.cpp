@@ -21,8 +21,6 @@ void VelocityVerlet::simulate() {
 }
 
 void VelocityVerlet::timestep(real delta_t) {
-    // test output
-    //std::cout << "timestep()\t" << W.e_tot << std::endl;
 
     // calculate position
     update_X();
@@ -97,7 +95,7 @@ void VelocityVerlet::update_X() {
                 	(*p).x[i] += W.length[i];
                 }
 
-                if(W.upper_border[i] == periodic && (*p).x[i] > W.length[i]){
+                if(W.upper_border[i] == periodic && (*p).x[i] >= W.length[i]){
                 	(*p).x[i] -= W.length[i];
                 }
 

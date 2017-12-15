@@ -225,12 +225,14 @@ int World::get_cell_index(std::vector<int> &j) {
 
 int World::determine_corr_cell(const Particle &p) {
     // calculate cell coordinates
-    std::vector<int> j(DIM,0);
-	for (size_t i = 0; i < DIM; ++i){
-		j[i] = std::min(std::floor(p.x[i]/cell_length[i]), cell_N[i]-1.0);
+    int J = std::min(std::floor(p.x[0]/cell_length[0]), cell_N[0]-1.0);
+	for (size_t i = 1; i < DIM; ++i){
+		int j = std::min(std::floor(p.x[i]/cell_length[i]), cell_N[i]-1.0);
+		J *= cell_N[i];
+		J += j;
 	}
 
-	return get_cell_index(j);
+	return J;
 }
 
 void World::fill_Cell(const Particle &p){
