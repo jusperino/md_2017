@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <cstdio>
+#include <mpi.h>
 
 #include "world.hpp"
 #include "ljpotential.hpp"
@@ -26,7 +27,11 @@ int main(int argc, char *argv[]) {
     return EXIT_FAILURE;
     }
 
-    // test2
+    // initialise MPI environment
+    int myrank, numprocs;
+    MPI::Init(argc, argv);
+    numprocs = MPI::COMM_WORLD.Get_size();
+    myrank = MPI::COMM_WORLD.Get_rank();
 
     // create World
     World W;
@@ -40,15 +45,8 @@ int main(int argc, char *argv[]) {
     // read Particles
     W.read_Particles(argv[2]);
 
-    /*for (auto &j: W.cells[0].adj_cells){
-        std::cout << j << std::endl;
-    }*/
-
     // print world configuration
     std::cout << W << std::endl;
-
-    // print_particle(W.particles[0]);
-
 
     // create the Observer
     Observer O(W);
@@ -60,6 +58,8 @@ int main(int argc, char *argv[]) {
     // run the simulation
     Verlet.simulate();
 
+    // exit MPI environment
+    MPI::Finalize();
 
     return EXIT_SUCCESS;
 }
