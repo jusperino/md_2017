@@ -1,11 +1,13 @@
 #ifndef _SUBDOMAIN_HPP
 #define _SUBDOMAIN_HPP
 
-#include "world.hpp"
+#include <vector>
 #include "defines.hpp"
 
-class SubDomain {
+class Subdomain {
 	public:
+	Subdomain(const int &_numprocs, const int &_myrank);
+
 	real L[DIM]; 		// Kantenlängen des Gesamtgebiets
 	int N_c[DIM]; 		// Zahl der Zellen im Gesamtgebiet
 	
@@ -27,3 +29,4 @@ class SubDomain {
 	int ic_lower_global[DIM]; 	// globaler Index der ersten
 								// Zelle des Teilgebiets
 };
+#endif
