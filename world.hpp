@@ -17,7 +17,7 @@ enum BorderType{unknown = 0, leaving = 1, periodic = 2};
  */
 class World {
 public:
-    World();
+    World(SubDomain &_S);
 
     /**
      * @brief read the world parameters from the given parameter file
@@ -110,6 +110,8 @@ public:
     /// number of currently simulated particles
     int particle_count;
 
+protected:
+    SubDomain &S;
 };
 
 /**

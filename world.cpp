@@ -4,9 +4,9 @@
 #include <sstream>
 #include <string>
 #include <cmath>
+#include "subdomain.hpp"
 
-World::World() : name("unknown"),t(0),delta_t(0),t_end(0),e_kin(0),e_pot(0),e_tot(0)
-{
+World::World(SubDomain &_S) : name("unknown"),t(0),delta_t(0),t_end(0),e_kin(0),e_pot(0),e_tot(0),S(_S) {
     // empty constructor
 }
 
@@ -89,18 +89,17 @@ void World::read_Parameter(const std::string &filename) {
     int cell_count = 1;
     for (int i=0; i<DIM; ++i){
         cell_N[i] = std::max(floor(length[i]/cell_r_cut), 1.0);
-        cell_count *= cell_N[i];
+        cell_count *= cell_N[i]/S.N_p[i];
         cell_length[i] = length[i]/cell_N[i];
     }
 
-    // construct the grid by creating N1*N2(*N3) empty cells and adding them to the cells vector
+    // construct the grid of this subdomain
     for (int i = 0; i<cell_count; ++i) {
         Cell c;
         cells.push_back(c);
     }
 
     generate_adj_cells();
-
     // close file
     parfile.close();
 }
@@ -225,7 +224,7 @@ int World::get_cell_index(std::vector<int> &j) {
 
 int World::determine_corr_cell(const Particle &p) {
     // calculate cell coordinates
-    int J = std::min(std::floor(p.x[0]/cell_length[0]), cell_N[0]-1.0);
+    int J = std::min(std::floor(p.x[0]/cell_length[0]), cell_N[0]/S.N_p[0]-1.0);
 	for (size_t i = 1; i < DIM; ++i){
 		int j = std::min(std::floor(p.x[i]/cell_length[i]), cell_N[i]-1.0);
 		J *= cell_N[i];
