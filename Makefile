@@ -6,13 +6,13 @@
 #
 
 # define the executable file 
-MAIN = blatt3.exe
+MAIN = blatt4.exe
 
 # define the C source files
-SRCS = blatt3.cpp world.cpp timediscretization.cpp ljpotential.cpp velocityverlet.cpp observer.cpp potential.cpp
+SRCS = blatt4.cpp world.cpp timediscretization.cpp ljpotential.cpp velocityverlet.cpp observer.cpp potential.cpp subdomain.cpp
 
 # define the C compiler to use
-CC = g++
+CC = mpic++
 
 # define any compile-time flags
 CFLAGS = -Wall -g -std=c++11 -O2
