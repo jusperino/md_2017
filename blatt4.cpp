@@ -57,7 +57,7 @@ int main(int argc, char *argv[]) {
 
     // instantiate timediscretization
     // remark: & is used to get the address of Pot
-    VelocityVerlet Verlet(W, &Pot, O);
+    VelocityVerlet Verlet(S, W, &Pot, O);
 
     // run the simulation
     Verlet.simulate();

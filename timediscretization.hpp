@@ -4,6 +4,7 @@
 #include "world.hpp"
 #include "potential.hpp"
 #include "observer.hpp"
+#include "subdomain.hpp"
 #include <iostream>
 
 /**
@@ -18,7 +19,7 @@ public:
      * @param _Pot potential used for force calculation
      * @param _O Observer of the simulation
      */
-    TimeDiscretization(World& _W, Potential& _Pot, Observer& _O);
+    TimeDiscretization(Subdomain& _S, World& _W, Potential& _Pot, Observer& _O);
 
     /**
      * @brief run a single timestep
@@ -49,6 +50,9 @@ public:
 
 protected:
     // data structures
+
+    ///the subdomain belonging to this process
+    Subdomain &S;
     /// the world where the particles live in
     World &W;
     /// the potential used for force calculation
