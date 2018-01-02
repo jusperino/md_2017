@@ -1,10 +1,10 @@
 #include "velocityverlet.hpp"
 
-VelocityVerlet::VelocityVerlet(World& _W, Potential& _Pot, Observer& _O) : TimeDiscretization(_W,_Pot,_O) {
+VelocityVerlet::VelocityVerlet(Subdomain& _S, World& _W, Potential& _Pot, Observer& _O) : TimeDiscretization(_S,_W,_Pot,_O) {
     // empty constructor
 }
 
-VelocityVerlet::VelocityVerlet(World& _W, Potential* _Pot, Observer& _O) : TimeDiscretization(_W,(*_Pot),_O) {
+VelocityVerlet::VelocityVerlet(Subdomain& _S, World& _W, Potential* _Pot, Observer& _O) : TimeDiscretization(_S,_W,(*_Pot),_O) {
     // empty constructor
 }
 
@@ -48,12 +48,12 @@ void VelocityVerlet::comp_F() {
 	W.e_pot = 0;
 
 	// calculate forces of particles pairwise and sum up potential energy
-    for (auto &cell: W.cells){
-		for (auto &p: cell.particles){
+    for (auto &c: S.cells){
+		for (auto &p: W.cells[c].particles){
             for (int i=0; i<DIM; ++i){
                 p.F[i] = 0;
             }
-            for (auto &n: cell.adj_cells){
+            for (auto &n: W.cells[c].adj_cells){
                 for (auto &q: W.cells[n].particles){
                     if (&p != &q){
                         W.e_pot += 0.5*Pot.force(p, q);
@@ -70,8 +70,8 @@ void VelocityVerlet::update_V() {
 	W.e_kin = 0;
 
 	// update velocity v for each particle in each dimension and sum up kinetic energy
-    for (auto &cell: W.cells){
-        for (auto &p: cell.particles){
+    for (auto &c: S.cells){
+        for (auto &p: W.cells[c].particles){
             for(size_t i = 0; i<DIM; i++){
                 p.v[i] = p.v[i] + W.delta_t * 0.5 / p.m * (p.F[i] + p.F_old[i]);
                 W.e_kin += 0.5 * p.m * sqr(p.v[i]);
@@ -84,9 +84,9 @@ void VelocityVerlet::update_X() {
 	 // update position x for each particle in each dimension
 	 // after updating position,check if particle has left sim area
 	 // if so and BorderType is chosen "leaving", remove particle from storage vector
-    for (auto &cell: W.cells){
-        auto p = cell.particles.begin();
-        while (p!= cell.particles.end()){
+    for (auto &c: S.cells){
+        auto p = W.cells[c].particles.begin();
+        while (p!= W.cells[c].particles.end()){
             for(size_t i = 0; i<DIM; i++){
                 (*p).x[i] = (*p).x[i] + W.delta_t * ((*p).v[i] + 0.5 / (*p).m * (*p).F[i] * W.delta_t);
 
@@ -105,7 +105,7 @@ void VelocityVerlet::update_X() {
             if (W.check_if_outside(*p) == false) {
                 ++p;
             } else {
-                p = cell.particles.erase(p);
+                p = W.cells[c].particles.erase(p);
                 W.particle_count--;
             }
         }
@@ -113,15 +113,15 @@ void VelocityVerlet::update_X() {
 }
 
 void VelocityVerlet::update_Cells() {
-    for (int J = 0; J<W.cells.size(); ++J){
-        auto p = W.cells[J].particles.begin();
-        while (p!= W.cells[J].particles.end()){
+    for (auto &c: S.cells){
+        auto p = W.cells[c].particles.begin();
+        while (p!= W.cells[c].particles.end()){
             int new_cell_index = W.determine_corr_cell(*p);
-            if (J == new_cell_index) {
+            if (c == new_cell_index) {
                 ++p;
             } else {
                 W.cells[new_cell_index].particles.push_back(*p);
-                p = W.cells[J].particles.erase(p);
+                p = W.cells[c].particles.erase(p);
             }
         }
     }

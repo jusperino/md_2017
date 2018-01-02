@@ -16,7 +16,7 @@ public:
      * @param _Pot potential used for force calculation
      * @param _O Observer of the simulation
      */
-    VelocityVerlet(World& _W, Potential& _Pot, Observer &_O);
+    VelocityVerlet(Subdomain& _S, World& _W, Potential& _Pot, Observer &_O);
 
     /**
      * @brief constructor
@@ -28,7 +28,7 @@ public:
      * @param _Pot potential used for force calculation
      * @param _O Observer of the simulation
      */
-    VelocityVerlet(World& _W, Potential* _Pot, Observer &_O);
+    VelocityVerlet(Subdomain& _S, World& _W, Potential* _Pot, Observer &_O);
 
     /**
      * @brief run a single timestep
