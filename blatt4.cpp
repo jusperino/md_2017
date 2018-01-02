@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
     myrank = MPI::COMM_WORLD.Get_rank();
 
     // create subdomain for this process
-    SubDomain S;
+    SubDomain S(numprocs,myrank);
     
     // create World
     World W;
