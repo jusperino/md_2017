@@ -7,6 +7,7 @@
 #include "ljpotential.hpp"
 #include "velocityverlet.hpp"
 #include "observer.hpp"
+#include "subdomain.hpp"
 
 
 void print_particle(Particle &p){
@@ -29,15 +30,15 @@ int main(int argc, char *argv[]) {
 
     // initialise MPI environment
     int myrank, numprocs;
-    MPI::Init(argc, argv);
-    numprocs = MPI::COMM_WORLD.Get_size();
-    myrank = MPI::COMM_WORLD.Get_rank();
+    MPI_Init(&argc, &argv);
+    MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
+    MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
 
     // create subdomain for this process
-    SubDomain S(numprocs,myrank);
+    Subdomain S(numprocs,myrank);
     
     // create World
-    World W;
+    World W(S);
 
     // instantiate Potential
     LjPotential Pot(W);
@@ -62,7 +63,7 @@ int main(int argc, char *argv[]) {
     Verlet.simulate();
 
     // exit MPI environment
-    MPI::Finalize();
+    MPI_Finalize();
 
     return EXIT_SUCCESS;
 }
