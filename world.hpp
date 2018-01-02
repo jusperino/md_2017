@@ -8,6 +8,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include "subdomain.hpp"
 
 ///Border Type
 enum BorderType{unknown = 0, leaving = 1, periodic = 2};
@@ -17,7 +18,7 @@ enum BorderType{unknown = 0, leaving = 1, periodic = 2};
  */
 class World {
 public:
-    World(SubDomain &_S);
+    World(Subdomain &_S);
 
     /**
      * @brief read the world parameters from the given parameter file
@@ -40,11 +41,18 @@ public:
     void read_Particles(const std::string &filename);
 
     /**
-     * @brief for each cell, generate and store a list of its adjacent cells
+     * @brief calculate cells in subdomain and for each cell in the subdomain, generate and store a list of its adjacent cells
      *
      * @param none
      */
-    void generate_adj_cells();
+    void generate_subdomain_cells();
+
+    /**
+     * @brief determine dimension-wise index of process in process-grid from process rank
+     *
+     * @param process rank
+     */
+    std::vector<int> get_subd_dim_index(int J);
 
     /**
      * @brief returns true if the particle is outside the simulation area
@@ -111,7 +119,7 @@ public:
     int particle_count;
 
 protected:
-    SubDomain &S;
+    Subdomain &S;
 };
 
 /**

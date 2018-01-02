@@ -6,7 +6,7 @@
 #include <cmath>
 #include "subdomain.hpp"
 
-World::World(SubDomain &_S) : name("unknown"),t(0),delta_t(0),t_end(0),e_kin(0),e_pot(0),e_tot(0),S(_S) {
+World::World(Subdomain &_S) : name("unknown"),t(0),delta_t(0),t_end(0),e_kin(0),e_pot(0),e_tot(0),S(_S) {
     // empty constructor
 }
 
@@ -83,7 +83,7 @@ void World::read_Parameter(const std::string &filename) {
         }
 
         if (option=="num_procs"){
-            for int(i=0; i<DIM; ++i){
+            for (int i=0; i<DIM; ++i){
                 strstr >> S.N_p[i];
             }
 
@@ -111,12 +111,12 @@ void World::read_Parameter(const std::string &filename) {
         cells.push_back(c);
     }
 
-    generate_adj_cells();
+    generate_subdomain_cells();
     // close file
     parfile.close();
 }
 
-void World::generate_subdomain_cells(J) {
+void World::generate_subdomain_cells() {
     // calculate global sequential indices of the cells in this subdomain
     // for each of those, calculate the global sequential indices of the adjacent cells
 
@@ -135,7 +135,7 @@ void World::generate_subdomain_cells(J) {
         }
     }
 
-    std::vector<int> j = get_subd_dim_index(J)
+    std::vector<int> j = get_subd_dim_index(S.myrank);
     for (int k1 = j[0]*S.N_p[0]; k1 < (j[0]+1)*S.N_p[0]; ++k1) {
         for (int k2 = j[1]*S.N_p[1]; k2 < (j[1]+1)*S.N_p[1]; ++k2) {
             for (int k3 = j[2]*S.N_p[2]; k3 < (j[2]+1)*S.N_p[2]; ++k3) {
@@ -158,7 +158,7 @@ void World::generate_subdomain_cells(J) {
                     }
                     if (valid) {
                         // add sequential cell index to list of neighbours of that particular cell
-                        cells[J].adj_cells.push_back(get_cell_index(nborcand));
+                        cells[K].adj_cells.push_back(get_cell_index(nborcand));
                     }
                 }
             }
@@ -192,7 +192,7 @@ std::vector<int> World::get_subd_dim_index(int J) {
     // calculate subdomain dimenion-wise index from sequential index
     if (DIM == 3) {
         j.push_back(J/(S.N_p[1]*S.N_p[2]));
-        j.push_back((J - S.N_p[1]*S.N_p[2]*j[0])/N3);
+        j.push_back((J - S.N_p[1]*S.N_p[2]*j[0])/S.N_p[2]);
         j.push_back(J - S.N_p[2]*(j[1]+S.N_p[1]*j[0]));
     } else if (DIM == 2) {
         j.push_back(J/S.N_p[1]);
