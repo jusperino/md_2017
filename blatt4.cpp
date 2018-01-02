@@ -33,6 +33,9 @@ int main(int argc, char *argv[]) {
     numprocs = MPI::COMM_WORLD.Get_size();
     myrank = MPI::COMM_WORLD.Get_rank();
 
+    // create subdomain for this process
+    SubDomain S;
+    
     // create World
     World W;
 
