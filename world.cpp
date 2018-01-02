@@ -81,20 +81,32 @@ void World::read_Parameter(const std::string &filename) {
         if (option=="cell_r_cut"){
             strstr >> cell_r_cut;
         }
+
+        if (option=="num_procs"){
+            for int(i=0; i<DIM; ++i){
+                strstr >> S.N_p[i];
+            }
+
+        }
+
         option="";
     }
 
     // calculate cell division parameters from freshly read r_cut
+    // obtain parameters for the world (global) and this subdomain (local)
+    int global_cell_count = 1;
+    int local_cell_count = 1;
 
-    int cell_count = 1;
     for (int i=0; i<DIM; ++i){
         cell_N[i] = std::max(floor(length[i]/cell_r_cut), 1.0);
-        cell_count *= cell_N[i]/S.N_p[i];
+        S.N_p[i] = cell_N[i]/S.N_p[i];
+        local_cell_count *= S.N_p[i];
+        global_cell_count *= cell_N[i];
         cell_length[i] = length[i]/cell_N[i];
     }
 
-    // construct the grid of this subdomain
-    for (int i = 0; i<cell_count; ++i) {
+    // construct the world grid
+    for (int i = 0; i<global_cell_count; ++i) {
         Cell c;
         cells.push_back(c);
     }
@@ -104,96 +116,49 @@ void World::read_Parameter(const std::string &filename) {
     parfile.close();
 }
 
-void World::generate_adj_cells(){
-    // (hideously) generate the set of neighbour cells for each cell (thankfully only once)
+void World::generate_subdomain_cells(J) {
+    // calculate global sequential indices of the cells in this subdomain
+    // for each of those, calculate the global sequential indices of the adjacent cells
 
-    //start by constructing the dimensional indices of the neighbours relative to a specified cell (e.g. {-1,-1,0}, {1,0,-1} etc
+    // generate displacement modifiers dimension-wise
     std::vector<std::vector<int>> displacement;
 
     for (int j1 = -1; j1<2; ++j1) {
         for (int j2 = -1; j2<2; ++j2) {
-            if (DIM == 3){
-                for (int j3 = -1; j3<2; ++j3) {
+            for (int j3 = -1; j3<2; ++j3) {
                     std::vector<int> comb(3);
                     comb[0] = j1;
                     comb[1] = j2;
                     comb[2] = j3;
                     displacement.push_back(comb);
-                }
-            } else {
-                std::vector<int> comb(3);
-                comb[0] = j1;
-                comb[1] = j2;
-                displacement.push_back(comb);
             }
         }
     }
 
+    std::vector<int> j = get_subd_dim_index(J)
+    for (int k1 = j[0]*S.N_p[0]; k1 < (j[0]+1)*S.N_p[0]; ++k1) {
+        for (int k2 = j[1]*S.N_p[1]; k2 < (j[1]+1)*S.N_p[1]; ++k2) {
+            for (int k3 = j[2]*S.N_p[2]; k3 < (j[2]+1)*S.N_p[2]; ++k3) {
 
-    // using these displacement vectors, calculate the neighbours
-    for (int j1 = 0; j1<cell_N[0]; ++j1) {
-        for (int j2 = 0; j2<cell_N[1]; ++j2) {
-            if (DIM == 3){
-                for (int j3 = 0; j3<cell_N[2]; ++j3) {
-                    // consider each cell using these loops
-                    std::vector<int> v(3,0);
-                            v[0] = j1;
-                            v[1] = j2;
-                            v[2] = j3;
-                    int J = get_cell_index(v);
+                std::vector<int> v {k1,k2,k3};
+                int K = get_cell_index(v);
+                S.cells.push_back(K);
 
-                    std::vector<int> nborcand(3,0);
-                    for (auto &disp: displacement) {
-                        // calculate dim-indices of neighbour-candidates
-                        nborcand[0] = j1+disp[0];
-                        nborcand[1] = j2+disp[1];
-                        nborcand[2] = j3+disp[2];
-                        bool valid = true;
-                        for (int i = 0; i<DIM; ++i){
-
-                        	// check if lower_border, upper_border is set "periodic" and adjust dim-indices of neighbor candidates
-                        	if (lower_border[i] == periodic && nborcand[i] < 0){
-                        		nborcand[i] += cell_N[i];
-                        	}
-                        	if (lower_border[i] == periodic && nborcand[i] > cell_N[i]-1){
-                        		nborcand[i] -= cell_N[i];
-                        	}
-
-                            //check whether the neighbor is a valid cell in case border type is not periodic (if in any dimension the index is greater than the no of cells in that direction, it cannot be valid)
-                        	else if (nborcand[i] < 0 || nborcand[i] > cell_N[i]-1) {
-                                valid = false;
-                            }
-                        }
-                        if (valid) {
-                            // add sequential cell index to list of neighbours of that particular cell
-                            cells[J].adj_cells.push_back(get_cell_index(nborcand));
-                        }
-                    }
-                }
-            } else {
+                std::vector<int> nborcand(3,0);
                 for (auto &disp: displacement) {
-                    std::vector<int> nborcand(2,0);
-                    nborcand[0] = j1+disp[0];
-                    nborcand[1] = j2+disp[1];
+                    // calculate dim-indices of neighbour-candidates
+                    nborcand[0] = k1+disp[0];
+                    nborcand[1] = k2+disp[1];
+                    nborcand[2] = k3+disp[2];
                     bool valid = true;
                     for (int i = 0; i<DIM; ++i){
-
-                    	// check if lower_border, upper_border is set "periodic" and adjust dim-indices of neighbor candidates
-                    	if (lower_border[i] == periodic && nborcand[i] < 0){
-                    		nborcand[i] += cell_N[i];
-                    	}
-                    	if (lower_border[i] == periodic && nborcand[i] > cell_N[i]-1){
-                    		nborcand[i] -= cell_N[i];
-                    	}
-
-                    	//check whether the neighbor is a valid cell in case border type is not periodic (if in any dimension the index is greater than the no of cells in that direction, it cannot be valid)
-                        if (nborcand[i] < 0 || nborcand[i] > cell_N[i]) {
+                        if (nborcand[i] < 0 || nborcand[i] > cell_N[i]-1) {
                             valid = false;
                         }
                     }
                     if (valid) {
-                        std::vector<int> v = {j1,j2};
-                        cells[get_cell_index(v)].adj_cells.push_back(get_cell_index(nborcand));
+                        // add sequential cell index to list of neighbours of that particular cell
+                        cells[J].adj_cells.push_back(get_cell_index(nborcand));
                     }
                 }
             }
@@ -221,6 +186,22 @@ int World::get_cell_index(std::vector<int> &j) {
 	}
 	return(J);
 }
+
+std::vector<int> World::get_subd_dim_index(int J) {
+    std::vector<int> j;
+    // calculate subdomain dimenion-wise index from sequential index
+    if (DIM == 3) {
+        j.push_back(J/(S.N_p[1]*S.N_p[2]));
+        j.push_back((J - S.N_p[1]*S.N_p[2]*j[0])/N3);
+        j.push_back(J - S.N_p[2]*(j[1]+S.N_p[1]*j[0]));
+    } else if (DIM == 2) {
+        j.push_back(J/S.N_p[1]);
+        j.push_back(J - S.N_p[1]*j[0]);
+    }
+    return j;
+}
+
+
 
 int World::determine_corr_cell(const Particle &p) {
     // calculate cell coordinates
