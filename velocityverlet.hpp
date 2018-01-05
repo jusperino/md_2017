@@ -63,6 +63,11 @@ public:
      */
     virtual void update_Cells();
 
+     /**
+      * @brief transmit the particles contained by a specific cell to another process via MPI
+      */
+    virtual void send_cell(int ic, int ip);
+
 
 protected:
     // data structures inherited from TimeDiscretization

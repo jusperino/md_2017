@@ -127,4 +127,35 @@ void VelocityVerlet::update_Cells() {
     }
 }
 
+void VelocityVerlet::send_cell(int ic, int ip){
+	// send cell index
+	MPI::COMM_WORLD.Send(&ic, 1, MPI_INT, ip, 0);
+
+	// send number of particles contained by cell
+	int number = W.cells[ic].particles.size();
+	MPI::COMM_WORLD.Send(&number, 1, MPI_INT, ip, 0);
+
+	// send particle data
+	for(auto &p: W.cells[ic].particles){
+		const char* id = p.id.c_str();
+		MPI::COMM_WORLD.Send(&id, 1, MPI_BYTE, ip, 0);
+
+		real m = p.m;
+		MPI::COMM_WORLD.Send(&m, 1, MPI_DOUBLE, ip, 0);
+
+		for(int i = 0; i < DIM; i++){
+			real x = p.x[i];
+			MPI::COMM_WORLD.Send(&x, 1, MPI_DOUBLE, ip, 0);
+			real v = p.v[i];
+			MPI::COMM_WORLD.Send(&v, 1, MPI_DOUBLE, ip, 0);
+			real F = p.F[i];
+			MPI::COMM_WORLD.Send(&F, 1, MPI_DOUBLE, ip, 0);
+			real F_old = p.F_old[i];
+			MPI::COMM_WORLD.Send(&F_old, 1, MPI_DOUBLE, ip, 0);
+		}
+
+	}
+
+}
+
 // vim:set et sts=4 ts=4 sw=4 ai ci cin:
