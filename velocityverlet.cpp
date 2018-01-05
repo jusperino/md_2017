@@ -1,10 +1,10 @@
 #include "velocityverlet.hpp"
 
-VelocityVerlet::VelocityVerlet(Subdomain& _S, World& _W, Potential& _Pot, Observer& _O) : TimeDiscretization(_S,_W,_Pot,_O) {
+VelocityVerlet::VelocityVerlet(Subdomain& S, World& _W, Potential& _Pot, Observer& _O) : TimeDiscretization(S,_W,_Pot,_O) {
     // empty constructor
 }
 
-VelocityVerlet::VelocityVerlet(Subdomain& _S, World& _W, Potential* _Pot, Observer& _O) : TimeDiscretization(_S,_W,(*_Pot),_O) {
+VelocityVerlet::VelocityVerlet(Subdomain& S, World& _W, Potential* _Pot, Observer& _O) : TimeDiscretization(S,_W,(*_Pot),_O) {
     // empty constructor
 }
 

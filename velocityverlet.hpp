@@ -3,6 +3,7 @@
 
 #include "timediscretization.hpp"
 #include <cmath>
+#include <mpi.h>
 
 /**
  * @brief Implementation of the Velocity Verlet Algorithm
@@ -16,7 +17,7 @@ public:
      * @param _Pot potential used for force calculation
      * @param _O Observer of the simulation
      */
-    VelocityVerlet(Subdomain& _S, World& _W, Potential& _Pot, Observer &_O);
+    VelocityVerlet(Subdomain& S, World& _W, Potential& _Pot, Observer &_O);
 
     /**
      * @brief constructor
@@ -28,7 +29,7 @@ public:
      * @param _Pot potential used for force calculation
      * @param _O Observer of the simulation
      */
-    VelocityVerlet(Subdomain& _S, World& _W, Potential* _Pot, Observer &_O);
+    VelocityVerlet(Subdomain& S, World& _W, Potential* _Pot, Observer &_O);
 
     /**
      * @brief run a single timestep

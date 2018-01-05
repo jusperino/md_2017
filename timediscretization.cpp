@@ -1,6 +1,6 @@
 #include "timediscretization.hpp"
 
-TimeDiscretization::TimeDiscretization(Subdomain& _S, World& _W, Potential& _Pot, Observer &_O) : S(_S), W(_W), Pot(_Pot), O(_O)
+TimeDiscretization::TimeDiscretization(Subdomain& S, World& _W, Potential& _Pot, Observer &_O) : S(S), W(_W), Pot(_Pot), O(_O)
 {
 }
 

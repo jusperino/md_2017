@@ -19,7 +19,7 @@ public:
      * @param _Pot potential used for force calculation
      * @param _O Observer of the simulation
      */
-    TimeDiscretization(Subdomain& _S, World& _W, Potential& _Pot, Observer& _O);
+    TimeDiscretization(Subdomain& S, World& _W, Potential& _Pot, Observer& _O);
 
     /**
      * @brief run a single timestep
