@@ -6,7 +6,7 @@
 #include <cmath>
 #include "subdomain.hpp"
 
-World::World(Subdomain &_S) : name("unknown"),t(0),delta_t(0),t_end(0),e_kin(0),e_pot(0),e_tot(0),S(_S) {
+World::World(Subdomain &S) : name("unknown"),t(0),delta_t(0),t_end(0),e_kin(0),e_pot(0),e_tot(0),S(S) {
     // empty constructor
 }
 

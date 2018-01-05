@@ -18,7 +18,7 @@ enum BorderType{unknown = 0, leaving = 1, periodic = 2};
  */
 class World {
 public:
-    World(Subdomain &_S);
+    World(Subdomain &S);
 
     /**
      * @brief read the world parameters from the given parameter file
