@@ -206,4 +206,81 @@ void VelocityVerlet::exch_block(std::vector<int> I, std::vector<int> J, int ip){
 	I[DIM-1]++;
 	}
 }
+
+void VelocityVerlet::exch_bord(){
+
+	std::vector<int> I (DIM);
+	std::vector<int> J (DIM);
+
+	// lower, x3
+	for(int i=0; i < DIM; i++){
+		I[i] = S.ic_lower_global[i] + S.ic_start[i];
+	}
+
+	J[DIM-1] = 2*S.ic_start[DIM-1];
+	J[DIM-2] = S.ic_stop[DIM-2];
+	if(DIM == 3) J[DIM-3] = S.ic_stop[DIM-3];
+
+	exch_block(I, J, S.ip_lower[DIM-1]);
+
+	// upper, x3
+	I[DIM-1] = S.ic_lower_global[DIM-1] + S.ic_stop[DIM-1];
+	I[DIM-2] = S.ic_lower_global[DIM-2] + S.ic_start[DIM-2];
+	if(DIM == 3) I[DIM-3] = S.ic_lower_global[DIM-3] + S.ic_start[DIM-3];
+
+	for(int i=0; i < DIM; i++){
+		J[i] = S.ic_lower_global[i] + S.ic_stop[i];
+	}
+
+	exch_block(I, J, S.ip_upper[DIM-1]);
+
+	// lower, x2
+	I[DIM-1] = S.ic_lower_global[DIM-1];
+	I[DIM-2] = S.ic_lower_global[DIM-2] + S.ic_start[DIM-2];
+	if(DIM == 3) I[DIM-3] = S.ic_lower_global[DIM-3] + S.ic_start[DIM-3];
+
+	J[DIM-1] = S.ic_lower_global[DIM-1] + S.ic_number[DIM-1];
+	J[DIM-2] = S.ic_lower_global[DIM-2] + S.ic_start[DIM-2];
+	if(DIM == 3) J[DIM-3] = S.ic_lower_global[DIM-3] + S.ic_stop[DIM-3];
+
+	exch_block(I, J, S.ip_lower[DIM-2]);
+
+	// upper, x2
+	I[DIM-1] = S.ic_lower_global[DIM-1];
+	I[DIM-2] = S.ic_lower_global[DIM-2] + S.ic_stop[DIM-2] - S.ic_start[DIM-2];
+	if(DIM == 3) I[DIM-3] = S.ic_lower_global[DIM-3] + S.ic_start[DIM-3];
+
+	J[DIM-1] = S.ic_lower_global[DIM-1] + S.ic_number[DIM-1];
+	J[DIM-2] = S.ic_lower_global[DIM-2] + S.ic_stop[DIM-2];
+	if(DIM == 3) J[DIM-3] = S.ic_lower_global[DIM-3] + S.ic_stop[DIM-3];
+
+	exch_block(I, J, S.ip_upper[DIM-2]);
+
+	// lower, x3
+	if(DIM == 3){
+		I[DIM-1] = S.ic_lower_global[DIM-1];
+		I[DIM-2] = S.ic_lower_global[DIM-2];
+		I[DIM-3] = S.ic_lower_global[DIM-3] + S.ic_start[DIM-3];
+
+		J[DIM-1] = S.ic_lower_global[DIM-1] + S.ic_number[DIM-1];
+		J[DIM-2] = S.ic_lower_global[DIM-2] + S.ic_number[DIM-2];
+		J[DIM-3] = S.ic_lower_global[DIM-3] + 2*S.ic_start[DIM-3];
+
+		exch_block(I, J, S.ip_lower[DIM-3]);
+
+		// upper, x3
+		I[DIM-1] = S.ic_lower_global[DIM-1];
+		I[DIM-2] = S.ic_lower_global[DIM-2];
+		I[DIM-3] = S.ic_lower_global[DIM-3] + S.ic_stop[DIM-3];
+
+		J[DIM-1] = S.ic_lower_global[DIM-1] + S.ic_number[DIM-1];
+		J[DIM-2] = S.ic_lower_global[DIM-2] + S.ic_number[DIM-2];
+		I[DIM-3] = S.ic_lower_global[DIM-3] + S.ic_stop[DIM-3] + S.ic_start[DIM-3];
+
+		exch_block(I, J, S.ip_upper[DIM-3]);
+	}
+}
+
+
+
 // vim:set et sts=4 ts=4 sw=4 ai ci cin:

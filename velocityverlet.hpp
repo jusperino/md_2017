@@ -77,6 +77,12 @@ public:
      * @brief exchanges particle information of a block of cells spanned by two given cells with a given process
      */
     virtual void exch_block(std::vector<int> I, std::vector<int> J, int ip);
+
+    /**
+     * @brief exchange particle information of border neighborhoods
+     */
+    virtual void exch_bord();
+
 protected:
     // data structures inherited from TimeDiscretization
 
