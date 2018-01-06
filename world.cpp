@@ -136,6 +136,18 @@ void World::generate_subdomain_cells() {
     }
 
     std::vector<int> j = get_subd_dim_index(S.myrank);
+
+    // while at it, fill the subdomain class parameters with their values
+    std::copy(j.begin(), j.end(), S.ip);
+    for (int i = 0; i<DIM; ++i) {
+        S.ip_lower[i] = S.ip[i] - 1;
+        S.ip_upper[i] = S.ip[i] + 1;
+        S.ic_start[i] = 1;      // assume particle can not pass through an entire cell in one timestep 
+        S.ic_stop[i] = S.ic_start[i] + S.N_p[i];
+        S.ic_number[i] = S.N_p[i] + 2*S.ic_start[i];
+        S.ic_lower_global[i] = (S.ip[i] + 1) * S.N_p[i]; // each subdomain is the same size, as are the cells
+    }
+
     for (int k1 = j[0]*S.N_p[0]; k1 < (j[0]+1)*S.N_p[0]; ++k1) {
         for (int k2 = j[1]*S.N_p[1]; k2 < (j[1]+1)*S.N_p[1]; ++k2) {
             for (int k3 = j[2]*S.N_p[2]; k3 < (j[2]+1)*S.N_p[2]; ++k3) {
