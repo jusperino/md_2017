@@ -186,7 +186,8 @@ void VelocityVerlet::recv_cell(int ip){
 	// receive message containing char of particle data
 	MPI::COMM_WORLD.Recv(&msg, 1, MPI_BYTE, ip, 0);
 	strstr << msg;
-
+	strstr >> ic;
+	
 	// clear all particles in cell
 	W.cells[ic].particles.clear();
 
