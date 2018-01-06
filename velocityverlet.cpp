@@ -1,4 +1,6 @@
 #include "velocityverlet.hpp"
+#include <string>
+#include <sstream>
 
 VelocityVerlet::VelocityVerlet(Subdomain& S, World& _W, Potential& _Pot, Observer& _O) : TimeDiscretization(S,_W,_Pot,_O) {
     // empty constructor
@@ -130,60 +132,81 @@ void VelocityVerlet::update_Cells() {
 }
 
 void VelocityVerlet::send_cell(int ic, int ip){
+	// strstr stores the particle information as a buffer
+	std::stringstream strstr;
+
 	// send cell index
-	MPI::COMM_WORLD.Send(&ic, 1, MPI_INT, ip, 0);
+	strstr << &ic;
+	//MPI::COMM_WORLD.Send(&ic, 1, MPI_INT, ip, 0);
 
 	// send number of particles contained by cell
 	int number = W.cells[ic].particles.size();
-	MPI::COMM_WORLD.Send(&number, 1, MPI_INT, ip, 0);
+	strstr << number;
+	//MPI::COMM_WORLD.Send(&number, 1, MPI_INT, ip, 0);
 
 	// send particle data
 	for(auto &p: W.cells[ic].particles){
 		const char* id = p.id.c_str();
-		MPI::COMM_WORLD.Send(&id, 1, MPI_BYTE, ip, 0);
+		strstr << id;
+		//MPI::COMM_WORLD.Send(&id, 1, MPI_BYTE, ip, 0);
 
 		real m = p.m;
-		MPI::COMM_WORLD.Send(&m, 1, MPI_DOUBLE, ip, 0);
+		strstr << m;
+		//MPI::COMM_WORLD.Send(&m, 1, MPI_DOUBLE, ip, 0);
 
 		for(int i = 0; i < DIM; i++){
 			real x = p.x[i];
-			MPI::COMM_WORLD.Send(&x, 1, MPI_DOUBLE, ip, 0);
+			strstr << x;
+			//MPI::COMM_WORLD.Send(&x, 1, MPI_DOUBLE, ip, 0);
 			real v = p.v[i];
-			MPI::COMM_WORLD.Send(&v, 1, MPI_DOUBLE, ip, 0);
+			strstr << v;
+			//MPI::COMM_WORLD.Send(&v, 1, MPI_DOUBLE, ip, 0);
 			real F = p.F[i];
-			MPI::COMM_WORLD.Send(&F, 1, MPI_DOUBLE, ip, 0);
+			strstr << F;
+			//MPI::COMM_WORLD.Send(&F, 1, MPI_DOUBLE, ip, 0);
 			real F_old = p.F_old[i];
-			MPI::COMM_WORLD.Send(&F_old, 1, MPI_DOUBLE, ip, 0);
+			strstr << F_old;
+			//MPI::COMM_WORLD.Send(&F_old, 1, MPI_DOUBLE, ip, 0);
 		}
 
 	}
+
+	const std::string tmp = strstr.str();		//create temp string as strstr.str() gets deleted after call
+	const char* msg = tmp.c_str();				//create char to send via MPI
+	MPI::COMM_WORLD.Send(&msg, 1, MPI_BYTE, ip, 0);
 
 }
 
 void VelocityVerlet::recv_cell(int ip){
 	int ic;
 	int number;
+	std::string msg;
+	std::stringstream strstr;
 
-	// receive cell index
-	MPI::COMM_WORLD.Recv(&ic, 1, MPI_INT, ip, 0);
+	// receive message containing char of particle data
+	MPI::COMM_WORLD.Recv(&msg, 1, MPI_BYTE, ip, 0);
+	strstr << msg;
 
 	// clear all particles in cell
 	W.cells[ic].particles.clear();
 
-	// receive number of particles contained by cell
-	MPI::COMM_WORLD.Recv(&number, 1, MPI_INT, ip, 0);
+	// extract number of particles from message
+	strstr >> number;
 
 	// receive particle data
 	for(int k = 0; k < number; k++){
 		Particle p;
 
-		MPI::COMM_WORLD.Recv(&p.id, 1, MPI_BYTE, ip, 0);
-		MPI::COMM_WORLD.Recv(&p.m, 1, MPI_DOUBLE, ip, 0);
+		strstr >> p.id >> p.m;
+		/*MPI::COMM_WORLD.Recv(&p.id, 1, MPI_BYTE, ip, 0);
+		MPI::COMM_WORLD.Recv(&p.m, 1, MPI_DOUBLE, ip, 0);*/
+
 		for(int i = 0; i < DIM; i++){
-			MPI::COMM_WORLD.Recv(&p.x[i], 1, MPI_DOUBLE, ip, 0);
+			strstr >> p.x[i] >> p.v[i] >> p.F[i] >> p.F_old[i];
+			/*MPI::COMM_WORLD.Recv(&p.x[i], 1, MPI_DOUBLE, ip, 0);
 			MPI::COMM_WORLD.Recv(&p.v[i], 1, MPI_DOUBLE, ip, 0);
 			MPI::COMM_WORLD.Recv(&p.F[i], 1, MPI_DOUBLE, ip, 0);
-			MPI::COMM_WORLD.Recv(&p.F_old[i], 1, MPI_DOUBLE, ip, 0);
+			MPI::COMM_WORLD.Recv(&p.F_old[i], 1, MPI_DOUBLE, ip, 0);*/
 		}
 
 		W.cells[ic].particles.push_back(p);
