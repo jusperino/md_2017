@@ -73,6 +73,10 @@ public:
     */
     virtual void recv_cell(int ip);
 
+    /**
+     * @brief exchanges particle information of a block of cells spanned by two given cells with a given process
+     */
+    virtual void exch_block(std::vector<int> I, std::vector<int> J, int ip);
 protected:
     // data structures inherited from TimeDiscretization
 

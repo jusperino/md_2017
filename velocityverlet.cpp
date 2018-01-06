@@ -189,4 +189,21 @@ void VelocityVerlet::recv_cell(int ip){
 
 }
 
+void VelocityVerlet::exch_block(std::vector<int> I, std::vector<int> J, int ip){
+	while(I[DIM-1] < J[DIM-1]){
+		while(I[DIM-2] < J[DIM-2]){
+			while(DIM == 2 || I[DIM-3] < J[DIM-3]){
+				int c = W.get_cell_index(I);
+				send_cell(c, ip);
+				recv_cell(ip);
+
+				if(DIM == 3) I[DIM-3]++;
+			}
+
+		I[DIM-2]++;
+	}
+
+	I[DIM-1]++;
+	}
+}
 // vim:set et sts=4 ts=4 sw=4 ai ci cin:
