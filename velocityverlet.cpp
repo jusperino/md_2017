@@ -47,6 +47,8 @@ void VelocityVerlet::comp_F() {
 	// set potential energy to 0 in respect of conservation of energy
 	W.e_pot = 0;
 
+	exch_bord();
+
 	// calculate forces of particles pairwise and sum up potential energy
     for (auto &c: S.cells){
 		for (auto &p: W.cells[c].particles){
