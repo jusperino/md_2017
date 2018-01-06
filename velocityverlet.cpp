@@ -158,4 +158,35 @@ void VelocityVerlet::send_cell(int ic, int ip){
 
 }
 
+void VelocityVerlet::recv_cell(int ip){
+	int ic;
+	int number;
+
+	// receive cell index
+	MPI::COMM_WORLD.Recv(&ic, 1, MPI_INT, ip, 0);
+
+	// clear all particles in cell
+	W.cells[ic].particles.clear();
+
+	// receive number of particles contained by cell
+	MPI::COMM_WORLD.Recv(&number, 1, MPI_INT, ip, 0);
+
+	// receive particle data
+	for(int k = 0; k < number; k++){
+		Particle p;
+
+		MPI::COMM_WORLD.Recv(&p.id, 1, MPI_BYTE, ip, 0);
+		MPI::COMM_WORLD.Recv(&p.m, 1, MPI_DOUBLE, ip, 0);
+		for(int i = 0; i < DIM; i++){
+			MPI::COMM_WORLD.Recv(&p.x[i], 1, MPI_DOUBLE, ip, 0);
+			MPI::COMM_WORLD.Recv(&p.v[i], 1, MPI_DOUBLE, ip, 0);
+			MPI::COMM_WORLD.Recv(&p.F[i], 1, MPI_DOUBLE, ip, 0);
+			MPI::COMM_WORLD.Recv(&p.F_old[i], 1, MPI_DOUBLE, ip, 0);
+		}
+
+		W.cells[ic].particles.push_back(p);
+	}
+
+}
+
 // vim:set et sts=4 ts=4 sw=4 ai ci cin:

@@ -68,6 +68,10 @@ public:
       */
     virtual void send_cell(int ic, int ip);
 
+    /**
+    * @brief receive particles contained by a cell from a specific process
+    */
+    virtual void recv_cell(int ip);
 
 protected:
     // data structures inherited from TimeDiscretization
