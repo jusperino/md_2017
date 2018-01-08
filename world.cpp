@@ -227,6 +227,10 @@ int World::determine_corr_cell(const Particle &p) {
 	return J;
 }
 
+std::vector<int> World::determine_cell_coord(const Particle &p){
+	//TODO fill in function
+}
+
 void World::fill_Cell(const Particle &p){
 	// calculate cell index
     int J = determine_corr_cell(p);

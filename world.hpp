@@ -76,6 +76,13 @@ public:
     int determine_corr_cell(const Particle &p);
 
     /**
+     * @brief determine dimension-wise indices of the cell a particle should belong to
+     *
+     * @param particle to check
+     */
+    std::vector<int> determine_cell_coord(const Particle &p);
+
+    /**
     * @brief write particle into cell according to coordinates
     *
     * @param p particle to be stored in cell
