@@ -24,6 +24,9 @@ public:
      */
 	virtual real force(Particle &p, Particle &q);
 
+	real epsilon;
+	real sigma;
+
 protected:
 };
 

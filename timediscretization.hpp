@@ -56,9 +56,11 @@ protected:
     /// the world where the particles live in
     World &W;
     /// the potential used for force calculation
-    Potential& Pot;
+    Potential &Pot;
     /// the observer of the simulation
     Observer &O;
+
+    
 
 private:
     TimeDiscretization();
