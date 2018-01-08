@@ -213,7 +213,9 @@ std::vector<int> World::get_subd_dim_index(int J) {
     return j;
 }
 
+int get_process_rank(std::vector<int> &j){
 
+}
 
 int World::determine_corr_cell(const Particle &p) {
     // calculate cell coordinates

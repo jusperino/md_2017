@@ -54,6 +54,13 @@ public:
      */
     std::vector<int> get_subd_dim_index(int J);
 
+    /*
+     * @brief determine rank of the process containing a given cell
+     *
+     * @param cell coordinates to check
+     */
+    int get_process_rank(std::vector<int> &j);
+
     /**
      * @brief returns true if the particle is outside the simulation area
      *
