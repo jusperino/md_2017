@@ -264,7 +264,7 @@ void VelocityVerlet::send_cell(int ic, int ip){
 
 	const std::string tmp = strstr.str();		//create temp string as strstr.str() gets deleted after call
 	const char* msg = tmp.c_str();				//create char to send via MPI
-	MPI::COMM_WORLD.Send(&msg, 1, MPI_BYTE, ip, -1);
+	MPI::COMM_WORLD.Send(&msg, 1, MPI_BYTE, ip, 1);
 
 }
 
@@ -275,7 +275,7 @@ void VelocityVerlet::recv_cell(int ip){
 	std::stringstream strstr;
 
 	// receive message containing char of particle data
-	MPI::COMM_WORLD.Recv(&msg, 1, MPI_BYTE, ip, -1);
+	MPI::COMM_WORLD.Recv(&msg, 1, MPI_BYTE, ip, 1);
 	strstr << msg;
 	strstr >> ic;
 	
@@ -387,7 +387,7 @@ void VelocityVerlet::exch_bord(){
 		exch_block(I, J, S.ip_upper[DIM-2]);
 	}
 
-	// lower, x3
+	// lower, x1
 	if(DIM == 3){
 		if(S.ip_lower[DIM-3 != -1]){
 			I[DIM-1] = S.ic_lower_global[DIM-1];
@@ -401,15 +401,15 @@ void VelocityVerlet::exch_bord(){
 			exch_block(I, J, S.ip_lower[DIM-3]);
 		}
 
-		// upper, x3
+		// upper, x1
 		if(S.ip_upper[DIM-3 != -1]){
 			I[DIM-1] = S.ic_lower_global[DIM-1];
 			I[DIM-2] = S.ic_lower_global[DIM-2];
-			I[DIM-3] = S.ic_lower_global[DIM-3] + S.ic_stop[DIM-3];
+			I[DIM-3] = S.ic_lower_global[DIM-3] + S.ic_stop[DIM-3] - S.ic_start[DIM-3];
 
 			J[DIM-1] = S.ic_lower_global[DIM-1] + S.ic_number[DIM-1];
 			J[DIM-2] = S.ic_lower_global[DIM-2] + S.ic_number[DIM-2];
-			I[DIM-3] = S.ic_lower_global[DIM-3] + S.ic_stop[DIM-3] + S.ic_start[DIM-3];
+			I[DIM-3] = S.ic_lower_global[DIM-3] + S.ic_stop[DIM-3];
 
 			exch_block(I, J, S.ip_upper[DIM-3]);
 		}
