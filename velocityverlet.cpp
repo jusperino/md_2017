@@ -2,6 +2,7 @@
 #include <string>
 #include <sstream>
 
+
 VelocityVerlet::VelocityVerlet(Subdomain& S, World& _W, Potential& _Pot, Observer& _O) : TimeDiscretization(S,_W,_Pot,_O) {
     // empty constructor
 }
@@ -44,7 +45,10 @@ void VelocityVerlet::timestep(real delta_t) {
     W.t += delta_t;
 
     // set total energy
-    W.e_tot = W.e_pot + W.e_kin;
+    real e_tot_loc = W.e_pot + W.e_kin;
+
+    // communicate total system energy
+    MPI::COMM_WORLD.Allreduce(&e_tot_loc, &W.e_tot, 1, MPI_DOUBLE, MPI_SUM);
 
     // notify observer if output_interval is reached
     O.notify();
