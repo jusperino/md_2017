@@ -60,8 +60,6 @@ protected:
     /// the observer of the simulation
     Observer &O;
 
-    
-
 private:
     TimeDiscretization();
 };

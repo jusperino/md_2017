@@ -54,6 +54,13 @@ public:
      */
     std::vector<int> get_subd_dim_index(int J);
 
+    /*
+     * @brief determine rank of the process containing a given cell
+     *
+     * @param cell coordinates to check
+     */
+    int get_process_rank(std::vector<int> &j);
+
     /**
      * @brief returns true if the particle is outside the simulation area
      *
@@ -74,6 +81,13 @@ public:
      * @param particle to check
      */
     int determine_corr_cell(const Particle &p);
+
+    /**
+     * @brief determine dimension-wise indices of the cell a particle should belong to
+     *
+     * @param particle to check
+     */
+    std::vector<int> determine_cell_coord(const Particle &p);
 
     /**
     * @brief write particle into cell according to coordinates

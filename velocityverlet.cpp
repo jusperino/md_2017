@@ -13,9 +13,10 @@ VelocityVerlet::VelocityVerlet(Subdomain& S, World& _W, Potential* _Pot, Observe
 void VelocityVerlet::simulate() {
     // while simulation end time not reached
 
-	// zaehler wie lange der letze output her ist
+    // zaehler wie lange der letze output her ist
 	// wenn output_interval erreicht ist wir er auf null zueruck gesetzt und ein output gemacht
 	numberOfTimestepsSinceOutput=W.output_interval;
+
 
 	// initial calculation of forces
 	comp_F();
@@ -44,12 +45,15 @@ void VelocityVerlet::timestep(real delta_t) {
     W.e_tot = W.e_pot + W.e_kin;
 
     // notify observer if output_interval is reached
+    O.notify();
     if(numberOfTimestepsSinceOutput==W.output_interval){
+
 		O.notify();
 		numberOfTimestepsSinceOutput=0;
 	}else{
 		numberOfTimestepsSinceOutput++;
 	}
+
 }
 
 void VelocityVerlet::comp_F() {
@@ -128,15 +132,27 @@ void VelocityVerlet::update_Cells() {
     for (auto &c: S.cells){
         auto p = W.cells[c].particles.begin();
         while (p!= W.cells[c].particles.end()){
-            int new_cell_index = W.determine_corr_cell(*p);
+            std::vector<int> new_cell_coord (W.determine_cell_coord(*p));
+            int new_cell_index = W.get_cell_index(new_cell_coord);
             if (c == new_cell_index) {
                 ++p;
-            } else {
-                W.cells[new_cell_index].particles.push_back(*p);
+            }
+            else if(new_cell_coord[0] >= (S.ic_lower_global[0] + S.ic_start[0])
+            		&& new_cell_coord[1] >= (S.ic_lower_global[1] + S.ic_start[1])
+					&& new_cell_coord[2] >= (S.ic_lower_global[2] + S.ic_start[2])
+					&& new_cell_coord[0] < (S.ic_lower_global[0] + S.ic_stop[0])
+					&& new_cell_coord[1] < (S.ic_lower_global[1] + S.ic_stop[1])
+					&& new_cell_coord[2] < (S.ic_lower_global[2] + S.ic_stop[2])) {
+            	W.cells[new_cell_index].particles.push_back(*p);
                 p = W.cells[c].particles.erase(p);
+            }
+            else {
+            	int ip = W.get_process_rank(new_cell_coord);
+            	//TODO Send particle to process ip
             }
         }
     }
+    //TODO Receive particles: loop over every process and receive particle data
 }
 
 void VelocityVerlet::send_cell(int ic, int ip){
