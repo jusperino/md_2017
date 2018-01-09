@@ -132,6 +132,12 @@ public:
     /// number of currently simulated particles
     int particle_count;
 
+    real epsilon;
+
+    real sigma;
+
+    int output_interval;
+
 protected:
     Subdomain &S;
 };

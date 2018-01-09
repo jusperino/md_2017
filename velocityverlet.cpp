@@ -13,6 +13,11 @@ VelocityVerlet::VelocityVerlet(Subdomain& S, World& _W, Potential* _Pot, Observe
 void VelocityVerlet::simulate() {
     // while simulation end time not reached
 
+    // zaehler wie lange der letze output her ist
+	// wenn output_interval erreicht ist wir er auf null zueruck gesetzt und ein output gemacht
+	numberOfTimestepsSinceOutput=W.output_interval;
+
+
 	// initial calculation of forces
 	comp_F();
 
@@ -39,8 +44,15 @@ void VelocityVerlet::timestep(real delta_t) {
     // set total energy
     W.e_tot = W.e_pot + W.e_kin;
 
-    // notify observer
+    // notify observer if output_interval is reached
     O.notify();
+    if(numberOfTimestepsSinceOutput==W.output_interval){
+
+		O.notify();
+		numberOfTimestepsSinceOutput=0;
+	}else{
+		numberOfTimestepsSinceOutput++;
+	}
 
 }
 

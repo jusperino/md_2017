@@ -88,6 +88,7 @@ protected:
 
 private:
     VelocityVerlet();
+    int numberOfTimestepsSinceOutput;
 };
 
 #endif // _VELOCITYVERLET_HPP

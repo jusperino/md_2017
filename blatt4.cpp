@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
     World W(S);
 
     // instantiate Potential
-    LjPotential Pot(W);
+    LjPotential Pot(W,W.epsilon,W.sigma);
 
     // read Parameters
     W.read_Parameter(argv[1]);

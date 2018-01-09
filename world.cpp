@@ -89,6 +89,21 @@ void World::read_Parameter(const std::string &filename) {
 
         }
 
+        if (option=="epsilon"){
+			strstr >> epsilon;
+		}
+
+		if (option=="sigma"){
+			strstr >> sigma;
+		}
+
+		if (option=="output_interval"){
+			strstr >> output_interval;
+		}
+
+		
+
+
         option="";
     }
 
