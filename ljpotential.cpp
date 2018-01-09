@@ -10,7 +10,7 @@ T IntPow (T a, int b){
 	return result;
 }
 
-LjPotential::LjPotential(World& _W) : Potential(_W) {
+LjPotential::LjPotential(World& _W, real& epsilon, real& sigma) : Potential(_W) {
     // empty constructor
 }
 

@@ -12,7 +12,7 @@ public:
      * @brief constructor
      * @param _W World to make use of potential methods
      */
-    LjPotential(World& _W);
+    LjPotential(World& _W, real& epsilon, real& sigma);
 
 	/**
      * @brief calculate the force between the two particles and add it to p
@@ -24,10 +24,9 @@ public:
      */
 	virtual real force(Particle &p, Particle &q);
 
-	real epsilon;
-	real sigma;
-
 protected:
+    real epsilon;
+    real sigma;
 };
 
 #endif // _LJPOTENTIAL_HPP

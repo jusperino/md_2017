@@ -131,11 +131,10 @@ public:
     real cell_r_cut;
     /// number of currently simulated particles
     int particle_count;
-
+    /// parameters for force calculation
     real epsilon;
-
     real sigma;
-
+    /// interval in which observer is notified and output produced
     int output_interval;
 
 protected:
