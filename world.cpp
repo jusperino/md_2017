@@ -163,7 +163,7 @@ void World::generate_subdomain_cells() {
         if ((upper[i] + 1 > S.proc_per_dim[i]) && (upper_border[i] != periodic)) {
             S.ip_upper[i] = -1;
         } else if (upper_border[i] == periodic) {
-            upper[i] -= proc_per_dim[i];
+            upper[i] -= S.proc_per_dim[i];
             S.ip_upper[i] = get_process_rank(upper);
         } else {
             S.ip_upper[i] = get_process_rank(upper);
@@ -171,7 +171,7 @@ void World::generate_subdomain_cells() {
         if (lower[i] + 1 < 0 && lower_border[i] != periodic) {
             S.ip_lower[i] = -1;
         } else if (lower_border[i] == periodic) {
-            lower[i] += proc_per_dim[i];
+            lower[i] += S.proc_per_dim[i];
             S.ip_lower[i] = get_process_rank(lower);
         } else {
             S.ip_lower[i] = get_process_rank(lower);
