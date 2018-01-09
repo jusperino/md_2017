@@ -84,7 +84,7 @@ void World::read_Parameter(const std::string &filename) {
 
         if (option=="num_procs"){
             for (int i=0; i<DIM; ++i){
-                strstr >> S.N_p[i];
+                strstr >> S.proc_per_dim[i];
             }
 
         }
@@ -114,7 +114,7 @@ void World::read_Parameter(const std::string &filename) {
 
     for (int i=0; i<DIM; ++i){
         cell_N[i] = std::max(floor(length[i]/cell_r_cut), 1.0);
-        S.N_p[i] = cell_N[i]/S.N_p[i];
+        S.N_p[i] = cell_N[i]/S.proc_per_dim[i];
         local_cell_count *= S.N_p[i];
         global_cell_count *= cell_N[i];
         cell_length[i] = length[i]/cell_N[i];
@@ -159,8 +159,24 @@ void World::generate_subdomain_cells() {
         std::vector<int> upper(S.ip, S.ip + DIM);
         lower[i] = S.ip[i] - 1;
         upper[i] = S.ip[i] + 1;
-        S.ip_lower[i] = get_process_rank(lower);
-        S.ip_upper[i] = get_process_rank(upper);
+
+        if ((upper[i] + 1 > S.proc_per_dim[i]) && (upper_border[i] != periodic)) {
+            S.ip_upper[i] = -1;
+        } else if (upper_border[i] == periodic) {
+            upper[i] -= proc_per_dim[i];
+            S.ip_upper[i] = get_process_rank(upper);
+        } else {
+            S.ip_upper[i] = get_process_rank(upper);
+        }
+        if (lower[i] + 1 < 0 && lower_border[i] != periodic) {
+            S.ip_lower[i] = -1;
+        } else if (lower_border[i] == periodic) {
+            lower[i] += proc_per_dim[i];
+            S.ip_lower[i] = get_process_rank(lower);
+        } else {
+            S.ip_lower[i] = get_process_rank(lower);
+        }
+
         S.ic_start[i] = 1;      // assume particle can not pass through an entire cell in one timestep 
         S.ic_stop[i] = S.ic_start[i] + S.N_p[i];
         S.ic_number[i] = S.N_p[i] + 2*S.ic_start[i];

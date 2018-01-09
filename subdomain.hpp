@@ -14,6 +14,7 @@ class Subdomain {
 	// zusätzliche Parameter für Parallelisierung
 	int myrank; 		// Prozessnummer des lokalen Prozesses
 	int numprocs; 		// Anzahl der gestarteten Prozesse
+	int proc_per_dim[DIM];		// Number of processes in each dimension
 	std::vector<int> cells;		// sequential global indices of cells contained in subdomain
 	int ip[DIM]; 		// Position des Prozesses im Prozessgitter
 	int N_p[DIM]; 		// Anzahl der Zellen im Prozess
