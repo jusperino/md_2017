@@ -130,11 +130,13 @@ void VelocityVerlet::update_X() {
 
 void VelocityVerlet::update_Cells() {
     for (auto &c: S.cells){
+    	// use iterator to skip over moved/deleted particles
         auto p = W.cells[c].particles.begin();
         while (p!= W.cells[c].particles.end()){
             std::vector<int> new_cell_coord (W.determine_cell_coord(*p));
             int new_cell_index = W.get_cell_index(new_cell_coord);
             if (c == new_cell_index) {
+            	// do nothing if particle is still in correct cell
                 ++p;
             }
             else if(new_cell_coord[0] >= (S.ic_lower_global[0] + S.ic_start[0])
@@ -143,10 +145,12 @@ void VelocityVerlet::update_Cells() {
 					&& new_cell_coord[0] < (S.ic_lower_global[0] + S.ic_stop[0])
 					&& new_cell_coord[1] < (S.ic_lower_global[1] + S.ic_stop[1])
 					&& new_cell_coord[2] < (S.ic_lower_global[2] + S.ic_stop[2])) {
+            	// if particle is inside subdomain, move into correct cell in this process
             	W.cells[new_cell_index].particles.push_back(*p);
                 p = W.cells[c].particles.erase(p);
             }
             else {
+            	// if particle is outside subdomain, send to the process of subdomain the particle is in
             	int ip = W.get_process_rank(new_cell_coord);
             	//TODO Send particle to process ip
             }
