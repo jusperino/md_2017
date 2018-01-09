@@ -306,6 +306,9 @@ void VelocityVerlet::recv_cell(int ip){
 }
 
 void VelocityVerlet::exch_block(std::vector<int> I, std::vector<int> J, int ip){
+	// block to be exchanged is spanned by cells I and J
+	// they represent intervals [I[DIM],J[DIM]) in every dimension
+	// loop over every cell in the block, send and receive cell data
 	while(I[DIM-1] < J[DIM-1]){
 		while(I[DIM-2] < J[DIM-2]){
 			while(DIM == 2 || I[DIM-3] < J[DIM-3]){
@@ -324,6 +327,9 @@ void VelocityVerlet::exch_block(std::vector<int> I, std::vector<int> J, int ip){
 }
 
 void VelocityVerlet::exch_bord(){
+	// exchange lower and upper border margins in every dimension
+	// for this purpose firstly calculate two cells spanning the border margin block (front, bottom, left and back, top, right)
+	// then commit calculated coordinates and neighboring process' numbers to exch_block() in order to send and receive cell data
 
 	std::vector<int> I (DIM);
 	std::vector<int> J (DIM);
