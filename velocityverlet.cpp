@@ -45,7 +45,7 @@ void VelocityVerlet::timestep(real delta_t) {
     W.e_tot = W.e_pot + W.e_kin;
 
     // notify observer if output_interval is reached
-    O.notify();
+   
     if(numberOfTimestepsSinceOutput==W.output_interval){
 
 		O.notify();
