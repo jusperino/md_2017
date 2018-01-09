@@ -69,6 +69,13 @@ public:
     bool check_if_outside(Particle &p);
 
     /**
+     * @brief returns true if the particle is outside the subdomain
+     *
+     * @param particle to check
+     */
+    bool check_if_outside_subdomain(Particle &p);
+
+    /**
      * @brief calculate index of cell from dimension-wise indices
      *
      * @param vector of dimension-wise indices

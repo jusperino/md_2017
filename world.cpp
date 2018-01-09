@@ -155,8 +155,12 @@ void World::generate_subdomain_cells() {
     // while at it, fill the subdomain class parameters with their values
     std::copy(j.begin(), j.end(), S.ip);
     for (int i = 0; i<DIM; ++i) {
-        S.ip_lower[i] = S.ip[i] - 1;
-        S.ip_upper[i] = S.ip[i] + 1;
+        std::vector<int> lower(S.ip, S.ip + DIM);
+        std::vector<int> upper(S.ip, S.ip + DIM);
+        lower[i] = S.ip[i] - 1;
+        upper[i] = S.ip[i] + 1;
+        S.ip_lower[i] = get_process_rank(lower);
+        S.ip_upper[i] = get_process_rank(upper);
         S.ic_start[i] = 1;      // assume particle can not pass through an entire cell in one timestep 
         S.ic_stop[i] = S.ic_start[i] + S.N_p[i];
         S.ic_number[i] = S.N_p[i] + 2*S.ic_start[i];
@@ -198,6 +202,16 @@ bool World::check_if_outside(Particle &p) {
     bool discard = false;
     for (int i = 0; i<DIM; ++i) {
         if (((p.x[i] >= length[i]) && (upper_border[i] == leaving)) || (((p.x[i] < 0 )) && (lower_border[i] == leaving))) {
+            discard = true;
+        }
+    }
+    return(discard);
+}
+
+bool World::check_if_outside_subdomain(Particle &p){
+    bool discard = false;
+    for (int i = 0; i<DIM; ++i) {
+        if ((p.x[i] >= (S.ip[i]+1)*cell_length[i]*S.N_p[i]) || (p.x[i] < S.ip[i]*cell_length[i]*S.N_p[i])) {
             discard = true;
         }
     }
@@ -252,7 +266,11 @@ int World::determine_corr_cell(const Particle &p) {
 }
 
 std::vector<int> World::determine_cell_coord(const Particle &p){
-	//TODO fill in function
+    std::vector<int> res;
+	for (int i=0; i<DIM; ++i){
+        res.push_back(std::floor(p.x[i]/cell_length[i]));
+    }
+    return res;
 }
 
 void World::fill_Cell(const Particle &p){
@@ -315,7 +333,7 @@ void World::read_Particles(const std::string &filename) {
             }
 
             // store initiated particle in cell if it is not outside the sim area
-            if (check_if_outside(p) == false) {
+            if (check_if_outside_subdomain(p) == false) {
                 fill_Cell(p);
                 particle_count++;
             }
