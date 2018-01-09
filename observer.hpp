@@ -2,6 +2,7 @@
 #define _OBSERVER_HPP
 
 #include "world.hpp"
+#include "subdomain.hpp"
 #include <iostream>
 #include <fstream>
 
@@ -17,7 +18,7 @@ public:
      *
      * @param _W
      */
-    Observer(World& _W);
+    Observer(World& _W, Subdomain& S);
 
     /**
      * @brief destructor
@@ -50,6 +51,8 @@ public:
 protected:
     /// The world we are observing
     World &W;
+    /// the SubDomain of the world belonging to this process
+    Subdomain &S;
     /// Statistics filestream
     std::ofstream statistics;
     /// coordiantes filestream

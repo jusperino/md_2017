@@ -1,7 +1,9 @@
 #include "observer.hpp"
+#include "subdomain.hpp"
 #include <math.h>
+#include <string>
 
-Observer::Observer(World &_W) : W(_W)
+Observer::Observer(World &_W, Subdomain &S) : W(_W),S(S)
 {
     // open statistics file
     std::string statistics_filename = W.name + ".statistics";
@@ -20,7 +22,7 @@ Observer::Observer(World &_W) : W(_W)
     */
 
     // open xyz file
-    std::string xyz_filename = W.name + ".xyz";
+    std::string xyz_filename = std::to_string(S.myrank) + "." + W.name + ".xyz";
     // open file, overwrite existing files, take no prisoners
     xyz.open(xyz_filename.c_str());
     // and tell the world
