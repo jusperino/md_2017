@@ -17,6 +17,7 @@ void VelocityVerlet::simulate() {
 	// wenn output_interval erreicht ist wir er auf null zueruck gesetzt und ein output gemacht
 	numberOfTimestepsSinceOutput=W.output_interval;
 
+	t_count = 1;
 
 	// initial calculation of forces
 	comp_F();
@@ -24,6 +25,7 @@ void VelocityVerlet::simulate() {
     // simulate over set timeperiod as long as particles are left
     while (W.t < W.t_end && W.particle_count != 0) {
         timestep(W.delta_t);
+        t_count++;
     }
 }
 
@@ -138,7 +140,11 @@ void VelocityVerlet::update_Cells() {
             if (c == new_cell_index) {
             	// do nothing if particle is still in correct cell
                 ++p;
+            } else {
+            	W.cells[new_cell_index].particles.push_back(*p);
+            	p = W.cells[c].particles.erase(p);
             }
+            /*
             else if(new_cell_coord[0] >= (S.ic_lower_global[0] + S.ic_start[0])
             		&& new_cell_coord[1] >= (S.ic_lower_global[1] + S.ic_start[1])
 					&& new_cell_coord[2] >= (S.ic_lower_global[2] + S.ic_start[2])
@@ -152,11 +158,64 @@ void VelocityVerlet::update_Cells() {
             else {
             	// if particle is outside subdomain, send to the process of subdomain the particle is in
             	int ip = W.get_process_rank(new_cell_coord);
-            	//TODO Send particle to process ip
-            }
+            	//send_particle(*p, ip, new_cell_index);
+            }*/
         }
     }
-    //TODO Receive particles: loop over every process and receive particle data
+    /*
+    for (int i = 0; i<S.numprocs; ++i){
+    	bool flag = false;
+    	MPI::COMM_WORLD.probe(MPI_ANY_SOURCE, t_count, MPI_COMM_WORLD, &flag);
+    	while (flag){
+    		receive_particle();
+    		MPI::COMM_WORLD.probe(MPI_ANY_SOURCE, t_count, MPI_COMM_WORLD, &flag);
+    	}
+	}*/ //unfinished particle sending/receiveing block
+}
+
+void VelocityVerlet::send_particle(Particle &p, int ip, int ic){
+	// send particle p to process ip
+
+	// string buffer for particle data
+	std::stringstream strstr;
+
+	// send cell index
+	strstr << &ic;
+
+	// send particle id and mass
+	const char* id = p.id.c_str();
+	strstr << id << p.m;
+
+	for (int i=0; i<DIM; ++i){
+		strstr << p.x[i] << p.v[i] << p.F[i] << p.F_old[i];
+	}
+
+	const std::string tmp = strstr.str();		//create temp string since strstr.str() gets deleted after call
+	const char* msg = tmp.c_str();				//create char to send via MPI
+	//MPI::COMM_WORLD.Send(&msg, 1, MPI_BYTE, ip, t_count);
+}
+
+void VelocityVerlet::receive_particle(){
+	// receive particle message from any process
+	int ic;
+	std::string msg;
+	std::stringstream strstr;
+
+	// receive message containing char of particle data
+	MPI::COMM_WORLD.Recv(&msg, 1, MPI_BYTE, MPI_ANY_SOURCE, t_count);
+	strstr << msg;
+	strstr >> ic;
+
+	// receive particle data
+	Particle p;
+
+	strstr >> p.id >> p.m;
+
+	for(int i = 0; i < DIM; ++i){
+		strstr >> p.x[i] >> p.v[i] >> p.F[i] >> p.F_old[i];
+	}
+
+	W.cells[ic].particles.push_back(p);
 }
 
 void VelocityVerlet::send_cell(int ic, int ip){
@@ -182,7 +241,7 @@ void VelocityVerlet::send_cell(int ic, int ip){
 		strstr << m;
 		//MPI::COMM_WORLD.Send(&m, 1, MPI_DOUBLE, ip, 0);
 
-		for(int i = 0; i < DIM; i++){
+		for (int i = 0; i < DIM; i++){
 			real x = p.x[i];
 			strstr << x;
 			//MPI::COMM_WORLD.Send(&x, 1, MPI_DOUBLE, ip, 0);
@@ -201,7 +260,7 @@ void VelocityVerlet::send_cell(int ic, int ip){
 
 	const std::string tmp = strstr.str();		//create temp string as strstr.str() gets deleted after call
 	const char* msg = tmp.c_str();				//create char to send via MPI
-	MPI::COMM_WORLD.Send(&msg, 1, MPI_BYTE, ip, 0);
+	MPI::COMM_WORLD.Send(&msg, 1, MPI_BYTE, ip, -1);
 
 }
 
@@ -212,7 +271,7 @@ void VelocityVerlet::recv_cell(int ip){
 	std::stringstream strstr;
 
 	// receive message containing char of particle data
-	MPI::COMM_WORLD.Recv(&msg, 1, MPI_BYTE, ip, 0);
+	MPI::COMM_WORLD.Recv(&msg, 1, MPI_BYTE, ip, -1);
 	strstr << msg;
 	strstr >> ic;
 	
@@ -240,7 +299,6 @@ void VelocityVerlet::recv_cell(int ip){
 
 		W.cells[ic].particles.push_back(p);
 	}
-
 }
 
 void VelocityVerlet::exch_block(std::vector<int> I, std::vector<int> J, int ip){

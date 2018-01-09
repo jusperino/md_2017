@@ -63,6 +63,13 @@ public:
      */
     virtual void update_Cells();
 
+    /**
+    * @brief send particle p to process ip and
+    */
+    virtual void send_particle(Particle &p, int ip, int ic);
+
+    virtual void receive_particle();
+
      /**
       * @brief transmit the particles contained by a specific cell to another process via MPI
       */
@@ -89,6 +96,7 @@ protected:
 private:
     VelocityVerlet();
     int numberOfTimestepsSinceOutput;
+    int t_count;
 };
 
 #endif // _VELOCITYVERLET_HPP

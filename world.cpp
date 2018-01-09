@@ -217,7 +217,6 @@ int World::get_cell_index(std::vector<int> &j) {
 std::vector<int> World::get_subd_dim_index(int J) {
     std::vector<int> j;
     // calculate subdomain dimenion-wise index from sequential index
-    // inverse to get_process_rank
     if (DIM == 3) {
         j.push_back(J/(S.N_p[1]*S.N_p[2]));
         j.push_back((J - S.N_p[1]*S.N_p[2]*j[0])/S.N_p[2]);
@@ -230,10 +229,10 @@ std::vector<int> World::get_subd_dim_index(int J) {
 }
 
 int World::get_process_rank(std::vector<int> &j){
-    // calculate process rank from subdomain dimension-wise index
-    // inverse function to get_subd_dim_index
-    int J = j[0];
+    // calculate process rank belonging to dimension-wise cell index
+    int J = std::floor(j[0]/S.N_p[0]);
     for(size_t i = 1; i < DIM; ++i){
+        j[i] = std::floor(j[i]/S.N_p[i]);
         J *= S.N_p[i];
         J += j[i];
     }
