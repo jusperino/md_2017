@@ -57,17 +57,17 @@ void Observer::output_statistics()
 void Observer::output_coordinates()
 {
     coordinates << W.t << "\t";
-		for (auto &cell: W.cells){
+	for (auto &cell: W.cells){
             for (auto &p: cell.particles){
 			coordinates << p.x[0] << "\t"
 						<< p.x[1] << "\t";
             // check if there is a third coordinate to enter, else enter 0 in order to be applicable for both DIM 2 and DIM 3
-            if (DIM == 3){
-                coordinates << p.x[2] << "\t";
-			}
-			else coordinates << 0 << "\t";
-            }
+            	if (DIM == 3){
+                	coordinates << p.x[2] << "\t";
 		}
+		else coordinates << 0 << "\t";
+            }
+	}
     coordinates << std::endl;
 }
 
