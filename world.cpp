@@ -120,6 +120,7 @@ void World::read_Parameter(const std::string &filename) {
         cell_length[i] = length[i]/cell_N[i];
     }
 
+
     // construct the world grid
     for (int i = 0; i<global_cell_count; ++i) {
         Cell c;
@@ -129,6 +130,17 @@ void World::read_Parameter(const std::string &filename) {
     generate_subdomain_cells();
     // close file
     parfile.close();
+
+    /*
+    for (int i=0; i<DIM; ++i){
+        std::cout << S.myrank << std::endl;
+        std::cout << "     " << "x" << i+1 << " " << S.N_p[i] << " " << cell_length[i] << " " << S.ip[i] << std::endl; 
+    }
+
+    std::cout << S.myrank << std::endl;
+    for (auto& c: cells[S.cells[0]].adj_cells){
+        std::cout << "  " << c << std::endl;
+    }*/
 }
 
 void World::generate_subdomain_cells() {
@@ -155,32 +167,44 @@ void World::generate_subdomain_cells() {
     // while at it, fill the subdomain class parameters with their values
     std::copy(j.begin(), j.end(), S.ip);
     for (int i = 0; i<DIM; ++i) {
-        std::vector<int> lower(S.ip, S.ip + DIM);
-        std::vector<int> upper(S.ip, S.ip + DIM);
+        std::vector<int> lower(DIM);
+        std::vector<int> upper(DIM);
+        
+        for (int d=0; d<DIM; ++d) {
+            lower[d] = S.ip[d];
+            upper[d] = S.ip[d];
+        }
         lower[i] = S.ip[i] - 1;
         upper[i] = S.ip[i] + 1;
 
-        if ((upper[i] + 1 > S.proc_per_dim[i]) && (upper_border[i] != periodic)) {
-            S.ip_upper[i] = -1;
-        } else if (upper_border[i] == periodic) {
+        if (upper_border[i] == periodic) {
             upper[i] -= S.proc_per_dim[i];
-            S.ip_upper[i] = get_process_rank(upper);
+            S.ip_upper[i] = get_process_rank_procdim(upper);
         } else {
-            S.ip_upper[i] = get_process_rank(upper);
-        }
-        if (lower[i] + 1 < 0 && lower_border[i] != periodic) {
-            S.ip_lower[i] = -1;
-        } else if (lower_border[i] == periodic) {
-            lower[i] += S.proc_per_dim[i];
-            S.ip_lower[i] = get_process_rank(lower);
-        } else {
-            S.ip_lower[i] = get_process_rank(lower);
+            if (upper[i] > S.proc_per_dim[i] - 1) {
+                S.ip_upper[i] = -1;
+            } else {
+                S.ip_upper[i] = get_process_rank_procdim(upper);
+            } 
         }
 
-        S.ic_start[i] = 1;      // assume particle can not pass through an entire cell in one timestep 
+        if (lower_border[i] == periodic) {
+            lower[i] += S.proc_per_dim[i];
+            S.ip_lower[i] = get_process_rank_procdim(lower);
+        } else {
+            if (lower[i] < 0) {
+                S.ip_lower[i] = -1;
+            } else {
+                S.ip_lower[i] = get_process_rank_procdim(lower);
+            }
+        }
+
+        std::cout << i+1 << ": " << S.ip_lower[i] << "," << S.myrank << "," << S.ip_upper[i] << "   " << S.myrank << std::endl;
+
+        S.ic_start[i] = 1;      // assume particle cannot pass through an entire cell in one timestep 
         S.ic_stop[i] = S.ic_start[i] + S.N_p[i];
         S.ic_number[i] = S.N_p[i] + 2*S.ic_start[i];
-        S.ic_lower_global[i] = (S.ip[i] + 1) * S.N_p[i]; // each subdomain is the same size, as are the cells
+        S.ic_lower_global[i] = S.ip[i] * S.N_p[i] - S.ic_start[i]; // each subdomain is the same size, as are the cells
     }
 
     for (int k1 = j[0]*S.N_p[0]; k1 < (j[0]+1)*S.N_p[0]; ++k1) {
@@ -248,22 +272,32 @@ std::vector<int> World::get_subd_dim_index(int J) {
     std::vector<int> j;
     // calculate subdomain dimenion-wise index from sequential index
     if (DIM == 3) {
-        j.push_back(J/(S.N_p[1]*S.N_p[2]));
-        j.push_back((J - S.N_p[1]*S.N_p[2]*j[0])/S.N_p[2]);
-        j.push_back(J - S.N_p[2]*(j[1]+S.N_p[1]*j[0]));
+        j.push_back(J/(S.proc_per_dim[1]*S.proc_per_dim[2]));
+        j.push_back((J - S.proc_per_dim[1]*S.proc_per_dim[2]*j[0])/S.proc_per_dim[2]);
+        j.push_back(J - S.proc_per_dim[2]*(j[1]+S.proc_per_dim[1]*j[0]));
     } else if (DIM == 2) {
-        j.push_back(J/S.N_p[1]);
-        j.push_back(J - S.N_p[1]*j[0]);
+        j.push_back(J/S.proc_per_dim[1]);
+        j.push_back(J - S.proc_per_dim[1]*j[0]);
     }
     return j;
 }
 
-int World::get_process_rank(std::vector<int> &j){
-    // calculate process rank belonging to dimension-wise cell index
+int World::get_process_rank(std::vector<int> j){
+    // calculate process rank belonging to dimension-wise global cell index
     int J = std::floor(j[0]/S.N_p[0]);
     for(size_t i = 1; i < DIM; ++i){
         j[i] = std::floor(j[i]/S.N_p[i]);
-        J *= S.N_p[i];
+        J *= S.proc_per_dim[i];
+        J += j[i];
+    }
+    return(J);
+}
+
+int World::get_process_rank_procdim(std::vector<int> j){
+    // calculate process rank from dimension-wise process index
+    int J = j[0];
+    for(size_t i = 1; i < DIM; ++i){
+        J *= S.proc_per_dim[i];
         J += j[i];
     }
     return(J);

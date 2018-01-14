@@ -59,7 +59,14 @@ public:
      *
      * @param cell coordinates to check
      */
-    int get_process_rank(std::vector<int> &j);
+    int get_process_rank(std::vector<int> j);
+
+    /*
+     * @brief determine rank of the process from dimension-wise indices
+     *
+     * @param process coordinates to check
+     */
+    int get_process_rank_procdim(std::vector<int> j);
 
     /**
      * @brief returns true if the particle is outside the simulation area

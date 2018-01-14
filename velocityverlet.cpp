@@ -67,7 +67,7 @@ void VelocityVerlet::comp_F() {
 	// set potential energy to 0 in respect of conservation of energy
 	W.e_pot = 0;
 
-	exch_bord();
+	//exch_bord();
 
 	// calculate forces of particles pairwise and sum up potential energy
     for (auto &c: S.cells){
@@ -224,85 +224,81 @@ void VelocityVerlet::receive_particle(){
 
 void VelocityVerlet::send_cell(int ic, int ip){
 	// strstr stores the particle information as a buffer
-	std::stringstream strstr;
+	//std::stringstream strstr;
 
 	// send cell index
-	strstr << &ic;
-	//MPI::COMM_WORLD.Send(&ic, 1, MPI_INT, ip, 0);
+	//strstr << &ic;
+	MPI::COMM_WORLD.Send(&ic, 1, MPI_INT, ip, t_count);
+	MPI::COMM_WORLD.Recv()
 
 	// send number of particles contained by cell
 	int number = W.cells[ic].particles.size();
-	strstr << number;
-	//MPI::COMM_WORLD.Send(&number, 1, MPI_INT, ip, 0);
+	//strstr << number;
+	MPI::COMM_WORLD.Send(&number, 1, MPI_INT, ip, t_count);
 
 	// send particle data
 	for(auto &p: W.cells[ic].particles){
 		const char* id = p.id.c_str();
-		strstr << id;
-		//MPI::COMM_WORLD.Send(&id, 1, MPI_BYTE, ip, 0);
+		//strstr << id;
+		MPI::COMM_WORLD.Send(&id, 1, MPI_BYTE, ip, t_count);
 
 		real m = p.m;
-		strstr << m;
-		//MPI::COMM_WORLD.Send(&m, 1, MPI_DOUBLE, ip, 0);
+		//strstr << m;
+		MPI::COMM_WORLD.Send(&m, 1, MPI_DOUBLE, ip, t_count);
 
 		for (int i = 0; i < DIM; i++){
 			real x = p.x[i];
-			strstr << x;
-			//MPI::COMM_WORLD.Send(&x, 1, MPI_DOUBLE, ip, 0);
+			//strstr << x;
+			MPI::COMM_WORLD.Send(&x, 1, MPI_DOUBLE, ip, t_count);
 			real v = p.v[i];
-			strstr << v;
-			//MPI::COMM_WORLD.Send(&v, 1, MPI_DOUBLE, ip, 0);
+			//strstr << v;
+			MPI::COMM_WORLD.Send(&v, 1, MPI_DOUBLE, ip, t_count);
 			real F = p.F[i];
-			strstr << F;
-			//MPI::COMM_WORLD.Send(&F, 1, MPI_DOUBLE, ip, 0);
+			//strstr << F;
+			MPI::COMM_WORLD.Send(&F, 1, MPI_DOUBLE, ip, t_count);
 			real F_old = p.F_old[i];
-			strstr << F_old;
-			//MPI::COMM_WORLD.Send(&F_old, 1, MPI_DOUBLE, ip, 0);
+			//strstr << F_old;
+			MPI::COMM_WORLD.Send(&F_old, 1, MPI_DOUBLE, ip, t_count);
 		}
 
 	}
 
-	const std::string tmp = strstr.str();		//create temp string as strstr.str() gets deleted after call
+	/*const std::string tmp = strstr.str();		//create temp string as strstr.str() gets deleted after call
 	const char* msg = tmp.c_str();				//create char to send via MPI
-	MPI::COMM_WORLD.Send(&msg, 1, MPI_BYTE, ip, 1);
+	MPI::COMM_WORLD.Send(&msg, 1, MPI_BYTE, ip, 1);*/
 
 }
 
 void VelocityVerlet::recv_cell(int ip){
 	int ic;
 	int number;
-	std::string msg;
-	std::stringstream strstr;
 
-	// receive message containing char of particle data
-	MPI::COMM_WORLD.Recv(&msg, 1, MPI_BYTE, ip, 1);
-	strstr << msg;
-	strstr >> ic;
-	
+
+	// receive cell index
+	MPI::COMM_WORLD.Recv(&ic, 1, MPI_INT, ip, t_count);
+
 	// clear all particles in cell
 	W.cells[ic].particles.clear();
 
-	// extract number of particles from message
-	strstr >> number;
+	// receive number of particles contained by cell
+	MPI::COMM_WORLD.Recv(&number, 1, MPI_INT, ip, t_count);
 
 	// receive particle data
 	for(int k = 0; k < number; k++){
 		Particle p;
 
-		strstr >> p.id >> p.m;
-		/*MPI::COMM_WORLD.Recv(&p.id, 1, MPI_BYTE, ip, 0);
-		MPI::COMM_WORLD.Recv(&p.m, 1, MPI_DOUBLE, ip, 0);*/
-
+		MPI::COMM_WORLD.Recv(&p.id, 1, MPI_BYTE, ip, t_count);
+		MPI::COMM_WORLD.Recv(&p.m, 1, MPI_DOUBLE, ip, t_count);
 		for(int i = 0; i < DIM; i++){
-			strstr >> p.x[i] >> p.v[i] >> p.F[i] >> p.F_old[i];
-			/*MPI::COMM_WORLD.Recv(&p.x[i], 1, MPI_DOUBLE, ip, 0);
-			MPI::COMM_WORLD.Recv(&p.v[i], 1, MPI_DOUBLE, ip, 0);
-			MPI::COMM_WORLD.Recv(&p.F[i], 1, MPI_DOUBLE, ip, 0);
-			MPI::COMM_WORLD.Recv(&p.F_old[i], 1, MPI_DOUBLE, ip, 0);*/
+			MPI::COMM_WORLD.Recv(&p.x[i], 1, MPI_DOUBLE, ip, t_count);
+			MPI::COMM_WORLD.Recv(&p.v[i], 1, MPI_DOUBLE, ip, t_count);
+			MPI::COMM_WORLD.Recv(&p.F[i], 1, MPI_DOUBLE, ip, t_count);
+			MPI::COMM_WORLD.Recv(&p.F_old[i], 1, MPI_DOUBLE, ip, t_count);
 		}
 
 		W.cells[ic].particles.push_back(p);
 	}
+
 }
 
 void VelocityVerlet::exch_block(std::vector<int> I, std::vector<int> J, int ip){
@@ -313,6 +309,7 @@ void VelocityVerlet::exch_block(std::vector<int> I, std::vector<int> J, int ip){
 		while(I[DIM-2] < J[DIM-2]){
 			while(DIM == 2 || I[DIM-3] < J[DIM-3]){
 				int c = W.get_cell_index(I);
+				//std::cout << "send from " << S.myrank << " to " << ip << std::endl;
 				send_cell(c, ip);
 				recv_cell(ip);
 
@@ -335,7 +332,7 @@ void VelocityVerlet::exch_bord(){
 	std::vector<int> J (DIM);
 
 	// lower, x3
-	if(S.ip_upper[DIM-1] != -1){ 				// check if there is a neighboring process
+	if(S.ip_lower[DIM-1] != -1){ 				// check if there is a neighboring process
 		for(int i=0; i < DIM; i++){
 			I[i] = S.ic_lower_global[i] + S.ic_start[i];
 		}
@@ -348,7 +345,7 @@ void VelocityVerlet::exch_bord(){
 
 	}
 	// upper, x3
-	if(S.ip_lower[DIM-1] != -1){
+	if(S.ip_upper[DIM-1] != -1){
 		I[DIM-1] = S.ic_lower_global[DIM-1] + S.ic_stop[DIM-1];
 		I[DIM-2] = S.ic_lower_global[DIM-2] + S.ic_start[DIM-2];
 		if(DIM == 3) I[DIM-3] = S.ic_lower_global[DIM-3] + S.ic_start[DIM-3];
@@ -375,7 +372,7 @@ void VelocityVerlet::exch_bord(){
 	}
 
 	// upper, x2
-	if(S.ip_upper[DIM-1] != -1){
+	if(S.ip_upper[DIM-2] != -1){
 		I[DIM-1] = S.ic_lower_global[DIM-1];
 		I[DIM-2] = S.ic_lower_global[DIM-2] + S.ic_stop[DIM-2] - S.ic_start[DIM-2];
 		if(DIM == 3) I[DIM-3] = S.ic_lower_global[DIM-3] + S.ic_start[DIM-3];
@@ -389,7 +386,7 @@ void VelocityVerlet::exch_bord(){
 
 	// lower, x1
 	if(DIM == 3){
-		if(S.ip_lower[DIM-3 != -1]){
+		if(S.ip_lower[DIM-3] != -1){
 			I[DIM-1] = S.ic_lower_global[DIM-1];
 			I[DIM-2] = S.ic_lower_global[DIM-2];
 			I[DIM-3] = S.ic_lower_global[DIM-3] + S.ic_start[DIM-3];
@@ -402,7 +399,7 @@ void VelocityVerlet::exch_bord(){
 		}
 
 		// upper, x1
-		if(S.ip_upper[DIM-3 != -1]){
+		if(S.ip_upper[DIM-3] != -1){
 			I[DIM-1] = S.ic_lower_global[DIM-1];
 			I[DIM-2] = S.ic_lower_global[DIM-2];
 			I[DIM-3] = S.ic_lower_global[DIM-3] + S.ic_stop[DIM-3] - S.ic_start[DIM-3];

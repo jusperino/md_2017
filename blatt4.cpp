@@ -40,14 +40,14 @@ int main(int argc, char *argv[]) {
     // create World
     World W(S);
 
-    // instantiate Potential
-    LjPotential Pot(W,W.epsilon,W.sigma);
-
     // read Parameters
     W.read_Parameter(argv[1]);
 
     // read Particles
     W.read_Particles(argv[2]);
+
+    // instantiate Potential
+    LjPotential Pot(W,W.epsilon,W.sigma);
 
     // print world configuration
     std::cout << W << std::endl;

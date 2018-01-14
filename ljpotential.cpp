@@ -10,12 +10,11 @@ T IntPow (T a, int b){
 	return result;
 }
 
-LjPotential::LjPotential(World& _W, real& epsilon, real& sigma) : Potential(_W) {
+LjPotential::LjPotential(World& _W, real& epsilon, real& sigma) : Potential(_W),epsilon(epsilon),sigma(sigma) {
     // empty constructor
 }
 
 real LjPotential::force(Particle &p, Particle &q) {
-
     //berechne Lennard-Jones-Potential und Distanz zwischen den Partikeln
 	real dist = Potential::distance_2(p, q);
     real potential = 4 * epsilon * IntPow(sigma*sigma/dist,3) * (IntPow(sigma*sigma/dist,3)-1);

@@ -6,7 +6,7 @@
 Observer::Observer(World &_W, Subdomain &S) : W(_W),S(S)
 {
     // open statistics file
-    std::string statistics_filename = W.name + ".statistics";
+    std::string statistics_filename = std::to_string(S.myrank) + W.name + ".statistics";
     // open file, overwrite existing files, take no prisioners
     statistics.open(statistics_filename.c_str());
     // and tell the world
