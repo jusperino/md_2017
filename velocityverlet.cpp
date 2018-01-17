@@ -24,7 +24,7 @@ void VelocityVerlet::simulate() {
 	comp_F();
 
     // simulate over set timeperiod as long as particles are left
-    while (W.t < W.t_end && W.particle_count != 0) {
+    while (W.t < W.t_end) {
         timestep(W.delta_t);
         t_count++;
     }
@@ -51,15 +51,9 @@ void VelocityVerlet::timestep(real delta_t) {
     MPI::COMM_WORLD.Allreduce(&e_tot_loc, &W.e_tot, 1, MPI_DOUBLE, MPI_SUM);
 
     // notify observer if output_interval is reached
-    O.notify();
-    if(numberOfTimestepsSinceOutput==W.output_interval){
-
-		O.notify();
-		numberOfTimestepsSinceOutput=0;
-	}else{
-		numberOfTimestepsSinceOutput++;
-	}
-
+    if (t_count%W.output_interval == 0) {
+    	O.notify();
+    }
 }
 
 void VelocityVerlet::comp_F() {
@@ -67,7 +61,7 @@ void VelocityVerlet::comp_F() {
 	// set potential energy to 0 in respect of conservation of energy
 	W.e_pot = 0;
 
-	//exch_bord();
+	exch_bord();
 
 	// calculate forces of particles pairwise and sum up potential energy
     for (auto &c: S.cells){
@@ -148,33 +142,8 @@ void VelocityVerlet::update_Cells() {
             	W.cells[new_cell_index].particles.push_back(*p);
             	p = W.cells[c].particles.erase(p);
             }
-            /*
-            else if(new_cell_coord[0] >= (S.ic_lower_global[0] + S.ic_start[0])
-            		&& new_cell_coord[1] >= (S.ic_lower_global[1] + S.ic_start[1])
-					&& new_cell_coord[2] >= (S.ic_lower_global[2] + S.ic_start[2])
-					&& new_cell_coord[0] < (S.ic_lower_global[0] + S.ic_stop[0])
-					&& new_cell_coord[1] < (S.ic_lower_global[1] + S.ic_stop[1])
-					&& new_cell_coord[2] < (S.ic_lower_global[2] + S.ic_stop[2])) {
-            	// if particle is inside subdomain, move into correct cell in this process
-            	W.cells[new_cell_index].particles.push_back(*p);
-                p = W.cells[c].particles.erase(p);
-            }
-            else {
-            	// if particle is outside subdomain, send to the process of subdomain the particle is in
-            	int ip = W.get_process_rank(new_cell_coord);
-            	//send_particle(*p, ip, new_cell_index);
-            }*/
         }
     }
-    /*
-    for (int i = 0; i<S.numprocs; ++i){
-    	bool flag = false;
-    	MPI::COMM_WORLD.probe(MPI_ANY_SOURCE, t_count, MPI_COMM_WORLD, &flag);
-    	while (flag){
-    		receive_particle();
-    		MPI::COMM_WORLD.probe(MPI_ANY_SOURCE, t_count, MPI_COMM_WORLD, &flag);
-    	}
-	}*/ //unfinished particle sending/receiveing block
 }
 
 void VelocityVerlet::send_particle(Particle &p, int ip, int ic){
