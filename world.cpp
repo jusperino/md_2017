@@ -88,19 +88,34 @@ void World::read_Parameter(const std::string &filename) {
             }
 
         }
-
+        
         if (option=="epsilon"){
-		strstr >> epsilon;
-	}
+            strstr >> epsilon;
+        }
 
-	if (option=="sigma"){
-		strstr >> sigma;
-	}
+        if (option=="sigma"){
+            strstr >> sigma;
+        }
 
-	if (option=="output_interval"){
-		strstr >> output_interval;
-	}
+        if (option=="output_interval"){
+            strstr >> output_interval;
+        }
 
+        if (option=="set_start_temperature"){
+            strstr >> temp_start;
+        }
+
+        if (option=="thermostat_step_interval"){
+            strstr >> temp_interval;
+        }
+
+        if (option=="thermostat_target_temperature"){
+            strstr >> temp_target;
+        }
+
+        if (option=="random_seed"){
+            strstr >> random_seed;
+        }
 		
 
 

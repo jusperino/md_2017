@@ -150,6 +150,14 @@ public:
     real sigma;
     /// interval in which observer is notified and output produced
     int output_interval;
+    /// initial system temperature (T)
+    real temp_start;
+    /// target system temperature (T_d)
+    real temp_target;
+    /// temp updating interval
+    int temp_interval;
+    /// seed value for random number generator initialisation
+    double random_seed;
 
 protected:
     Subdomain &S;
