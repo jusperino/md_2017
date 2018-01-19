@@ -49,6 +49,9 @@ int main(int argc, char *argv[]) {
     // instantiate Potential
     LjPotential Pot(W,W.epsilon,W.sigma);
 
+    // randomise initial particle velocities around T_start
+    W.random_particle_velocities();
+
     // print world configuration
     std::cout << W << std::endl;
 
