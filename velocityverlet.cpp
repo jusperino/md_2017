@@ -146,59 +146,13 @@ void VelocityVerlet::update_Cells() {
     }
 }
 
-void VelocityVerlet::send_particle(Particle &p, int ip, int ic){
-	// send particle p to process ip
-
-	// string buffer for particle data
-	std::stringstream strstr;
-
-	// send cell index
-	strstr << &ic;
-
-	// send particle id and mass
-	const char* id = p.id.c_str();
-	strstr << id << p.m;
-
-	for (int i=0; i<DIM; ++i){
-		strstr << p.x[i] << p.v[i] << p.F[i] << p.F_old[i];
-	}
-
-	const std::string tmp = strstr.str();		//create temp string since strstr.str() gets deleted after call
-	const char* msg = tmp.c_str();				//create char to send via MPI
-	//MPI::COMM_WORLD.Send(&msg, 1, MPI_BYTE, ip, t_count);
-}
-
-void VelocityVerlet::receive_particle(){
-	// receive particle message from any process
-	int ic;
-	std::string msg;
-	std::stringstream strstr;
-
-	// receive message containing char of particle data
-	MPI::COMM_WORLD.Recv(&msg, 1, MPI_BYTE, MPI_ANY_SOURCE, t_count);
-	strstr << msg;
-	strstr >> ic;
-
-	// receive particle data
-	Particle p;
-
-	strstr >> p.id >> p.m;
-
-	for(int i = 0; i < DIM; ++i){
-		strstr >> p.x[i] >> p.v[i] >> p.F[i] >> p.F_old[i];
-	}
-
-	W.cells[ic].particles.push_back(p);
-}
-
-void VelocityVerlet::send_cell(int ic, int ip){
+/*void VelocityVerlet::send_cell(int ic, int ip){
 	// strstr stores the particle information as a buffer
 	//std::stringstream strstr;
 
 	// send cell index
 	//strstr << &ic;
 	MPI::COMM_WORLD.Send(&ic, 1, MPI_INT, ip, t_count);
-	MPI::COMM_WORLD.Recv()
 
 	// send number of particles contained by cell
 	int number = W.cells[ic].particles.size();
@@ -231,11 +185,6 @@ void VelocityVerlet::send_cell(int ic, int ip){
 		}
 
 	}
-
-	/*const std::string tmp = strstr.str();		//create temp string as strstr.str() gets deleted after call
-	const char* msg = tmp.c_str();				//create char to send via MPI
-	MPI::COMM_WORLD.Send(&msg, 1, MPI_BYTE, ip, 1);*/
-
 }
 
 void VelocityVerlet::recv_cell(int ip){
@@ -269,6 +218,7 @@ void VelocityVerlet::recv_cell(int ip){
 	}
 
 }
+*/
 
 void VelocityVerlet::exch_block(std::vector<int> I, std::vector<int> J, int ip){
 	// block to be exchanged is spanned by cells I and J
