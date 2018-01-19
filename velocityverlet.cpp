@@ -165,7 +165,7 @@ void VelocityVerlet::send_particle(Particle &p, int ip, int ic){
 
 	const std::string tmp = strstr.str();		//create temp string since strstr.str() gets deleted after call
 	const char* msg = tmp.c_str();				//create char to send via MPI
-	//MPI::COMM_WORLD.Send(&msg, 1, MPI_BYTE, ip, t_count);
+	MPI::COMM_WORLD.Send(&msg, 1, MPI_BYTE, ip, t_count);
 }
 
 void VelocityVerlet::receive_particle(){
@@ -198,7 +198,7 @@ void VelocityVerlet::send_cell(int ic, int ip){
 	// send cell index
 	//strstr << &ic;
 	MPI::COMM_WORLD.Send(&ic, 1, MPI_INT, ip, t_count);
-	MPI::COMM_WORLD.Recv()
+	//MPI::COMM_WORLD.Recv();
 
 	// send number of particles contained by cell
 	int number = W.cells[ic].particles.size();
@@ -279,8 +279,14 @@ void VelocityVerlet::exch_block(std::vector<int> I, std::vector<int> J, int ip){
 			while(DIM == 2 || I[DIM-3] < J[DIM-3]){
 				int c = W.get_cell_index(I);
 				//std::cout << "send from " << S.myrank << " to " << ip << std::endl;
-				send_cell(c, ip);
-				recv_cell(ip);
+				if(S.myrank%2 == 0){
+					send_cell(c, ip);
+					recv_cell(ip);
+				}
+				else{
+					recv_cell(ip);
+					send_cell(c, ip);
+				}
 
 				if(DIM == 3) I[DIM-3]++;
 			}
