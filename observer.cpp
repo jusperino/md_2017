@@ -5,23 +5,16 @@
 
 Observer::Observer(World &_W, Subdomain &S) : W(_W),S(S)
 {
-    // open statistics file
-    std::string statistics_filename = std::to_string(S.myrank) + W.name + ".statistics";
-    // open file, overwrite existing files, take no prisioners
-    statistics.open(statistics_filename.c_str());
-    // and tell the world
-    std::cout << "Opened " << statistics_filename << " for writing." << std::endl;
+    if (S.myrank == 0){
+        // open statistics file, let process 0 handle this
+        std::string statistics_filename = W.name + ".statistics";
+        // open file, overwrite existing files, take no prisoners
+        statistics.open(statistics_filename.c_str());
+        // and tell the world
+        std::cout << "Opened " << statistics_filename << " for writing." << std::endl;
+    }
 
-    /*
-    // open coordinates file
-    std::string coordinates_filename = W.name + ".csv";
-    // open file, overwrite existing files, take no prisoners
-    coordinates.open(coordinates_filename.c_str());
-    // and tell the world
-    std::cout << "Opened " << coordinates_filename << " for writing." << std::endl;
-    */
-
-    // open xyz file
+    // open xyz file (each process writes his own particles into seperate files)
     std::string xyz_filename = std::to_string(S.myrank) + "." + W.name + ".xyz";
     // open file, overwrite existing files, take no prisoners
     xyz.open(xyz_filename.c_str());
@@ -103,8 +96,10 @@ void Observer::notify()
     std::cout.flush();
 
     // call output functions
-    output_statistics();
-    //output_coordinates();
+    if (S.myrank == 0) {
+        output_statistics();
+    }
+
     output_xyz();
 }
 
