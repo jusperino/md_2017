@@ -6,10 +6,10 @@
 #
 
 # define the executable file 
-MAIN = blatt4.exe
+MAIN = blatt5.exe
 
 # define the C source files
-SRCS = blatt4.cpp world.cpp timediscretization.cpp ljpotential.cpp velocityverlet.cpp observer.cpp potential.cpp subdomain.cpp
+SRCS = blatt5.cpp world.cpp timediscretization.cpp ljpotential.cpp velocityverlet.cpp observer.cpp potential.cpp subdomain.cpp
 
 # define the C compiler to use
 CC = mpic++
