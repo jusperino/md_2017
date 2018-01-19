@@ -91,13 +91,12 @@ void Observer::output_xyz()
 
 void Observer::notify()
 {
-    float progress = round (10 * 100 * W.t / W.t_end)/10;
-    std::cout << "Progress: " << progress << "%" <<"\r";
-    std::cout.flush();
-
     // call output functions
     if (S.myrank == 0) {
         output_statistics();
+        float progress = round (10 * 100 * W.t / W.t_end)/10;
+        std::cout << "Progress: " << progress << "%" <<"\r";
+        std::cout.flush();
     }
 
     output_xyz();
