@@ -9,3 +9,4 @@ blatt1
 *.xyz
 *.particle
 hello_world.cpp
+.DS_Store

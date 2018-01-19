@@ -69,6 +69,13 @@ public:
     int get_process_rank_procdim(std::vector<int> j);
 
     /**
+     * @brief initialises the velocity vector of each particle by generatin samples from the normal distribution 
+     *
+     * @param none
+     */
+    void random_particle_velocities();
+
+    /**
      * @brief returns true if the particle is outside the simulation area
      *
      * @param particle to check

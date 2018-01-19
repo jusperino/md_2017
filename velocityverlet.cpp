@@ -146,7 +146,7 @@ void VelocityVerlet::update_Cells() {
     }
 }
 
-/*void VelocityVerlet::send_cell(int ic, int ip){
+void VelocityVerlet::send_cell(int ic, int ip){
 	// strstr stores the particle information as a buffer
 	//std::stringstream strstr;
 
@@ -218,7 +218,6 @@ void VelocityVerlet::recv_cell(int ip){
 	}
 
 }
-*/
 
 void VelocityVerlet::exch_block(std::vector<int> I, std::vector<int> J, int ip){
 	// block to be exchanged is spanned by cells I and J

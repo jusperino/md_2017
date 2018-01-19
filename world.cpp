@@ -4,6 +4,9 @@
 #include <sstream>
 #include <string>
 #include <cmath>
+#include <ctime>
+#include <cstdlib>
+#include <random>
 #include "subdomain.hpp"
 
 World::World(Subdomain &S) : name("unknown"),t(0),delta_t(0),t_end(0),e_kin(0),e_pot(0),e_tot(0),S(S) {
@@ -145,17 +148,6 @@ void World::read_Parameter(const std::string &filename) {
     generate_subdomain_cells();
     // close file
     parfile.close();
-
-    /*
-    for (int i=0; i<DIM; ++i){
-        std::cout << S.myrank << std::endl;
-        std::cout << "     " << "x" << i+1 << " " << S.N_p[i] << " " << cell_length[i] << " " << S.ip[i] << std::endl; 
-    }
-
-    std::cout << S.myrank << std::endl;
-    for (auto& c: cells[S.cells[0]].adj_cells){
-        std::cout << "  " << c << std::endl;
-    }*/
 }
 
 void World::generate_subdomain_cells() {
@@ -247,6 +239,23 @@ void World::generate_subdomain_cells() {
                         cells[K].adj_cells.push_back(get_cell_index(nborcand));
                     }
                 }
+            }
+        }
+    }
+}
+
+void World::random_particle_velocities(){
+    std::default_random_engine generator;
+    if (random_seed < 1){
+        generator.seed(time(NULL));
+    } else {
+        generator.seed(random_seed);
+    }
+    for (auto &c: S.cells){
+        for (auto &p: cells[c].particles){
+            for (int i = 0; i<DIM; ++i){
+                std::normal_distribution<double> distribution(0.0, temp_start/p.m);
+                p.v[i] = distribution(generator);
             }
         }
     }
