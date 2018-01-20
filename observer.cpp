@@ -5,21 +5,15 @@
 
 Observer::Observer(World &_W, Subdomain &S) : W(_W),S(S)
 {
-    // open statistics file
-    std::string statistics_filename = std::to_string(S.myrank) + W.name + ".statistics";
-    // open file, overwrite existing files, take no prisioners
-    statistics.open(statistics_filename.c_str());
-    // and tell the world
-    std::cout << "Opened " << statistics_filename << " for writing." << std::endl;
+    if (S.myrank == 0) {
+        // open statistics file
+        std::string statistics_filename = W.name + ".statistics";
+        // open file, overwrite existing files, take no prisioners
+        statistics.open(statistics_filename.c_str());
+        // and tell the world
+        std::cout << "Opened " << statistics_filename << " for writing." << std::endl;
+    }
 
-    /*
-    // open coordinates file
-    std::string coordinates_filename = W.name + ".csv";
-    // open file, overwrite existing files, take no prisoners
-    coordinates.open(coordinates_filename.c_str());
-    // and tell the world
-    std::cout << "Opened " << coordinates_filename << " for writing." << std::endl;
-    */
 
     // open xyz file
     std::string xyz_filename = std::to_string(S.myrank) + "." + W.name + ".xyz";
@@ -97,13 +91,16 @@ void Observer::output_xyz()
 }
 
 void Observer::notify()
-{
-    float progress = round (10 * 100 * W.t / W.t_end)/10;
-    std::cout << "Progress: " << progress << "%" <<"\r";
-    std::cout.flush();
+{   
+    if (S.myrank == 0) {
+        float progress = round (10 * 100 * W.t / W.t_end)/10;
+        std::cout << "Progress: " << progress << "%" <<"\r";
+        std::cout.flush();
 
-    // call output functions
-    output_statistics();
+        // call output functions
+        output_statistics();
+    }
+
     //output_coordinates();
     output_xyz();
 }
