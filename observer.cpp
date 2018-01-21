@@ -44,6 +44,7 @@ void Observer::output_statistics()
         << W.e_pot << "\t"
         << W.e_kin << "\t"
 		<< W.e_tot << "\t"
+        << W.temp << "\t"
         << std::endl;
 }
 

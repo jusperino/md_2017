@@ -159,8 +159,10 @@ public:
     real cell_length[DIM];
     /// r_cut used for calculation of the cell length
     real cell_r_cut;
-    /// number of currently simulated particles
+    /// number of currently simulated particles (restricted to this subdomain)
     int particle_count;
+    /// number of currently simulated particles across all subdomains (processes, via allreduce)
+    int global_particle_count;
     /// parameters for force calculation
     real epsilon;
     real sigma;
