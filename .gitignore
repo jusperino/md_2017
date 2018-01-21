@@ -7,3 +7,6 @@ blatt1
 *.parameter
 *.particles
 *.xyz
+b4ex2.particle
+*.particle
+.DS_Store
