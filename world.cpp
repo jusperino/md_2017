@@ -6,7 +6,6 @@
 #include <cmath>
 #include <ctime>
 #include <cstdlib>
-#include <random>
 #include "subdomain.hpp"
 
 World::World(Subdomain &S) : name("unknown"),t(0),delta_t(0),t_end(0),e_kin(0),e_pot(0),e_tot(0),S(S) {
@@ -245,20 +244,34 @@ void World::generate_subdomain_cells() {
 }
 
 void World::random_particle_velocities(){
-    std::default_random_engine generator;
     if (random_seed < 1){
-        generator.seed(time(NULL));
+        srand(time(NULL));
     } else {
-        generator.seed(random_seed);
+        srand(random_seed);
     }
     for (auto &c: S.cells){
         for (auto &p: cells[c].particles){
             for (int i = 0; i<DIM; ++i){
-                std::normal_distribution<double> distribution(0.0, temp_start/p.m);
-                p.v[i] = distribution(generator);
+                p.v[i] = normal_sample(temp_start/p.m);
             }
         }
     }
+}
+
+double World::normal_sample(double variance){ 
+    double s,x,y;
+    do {
+        x = (double(rand()) / RAND_MAX); // generate a double in the interval [0.0, 1.0]
+        y = (double(rand()) / RAND_MAX); // generate a double in the interval [0.0, 1.0]
+        // Shift x and u, such that they lie in the interval [-1,1).
+        x = 2.*x-1.;
+        y = 2.*y-1.;
+        // Calculate s = x^2 + y^2
+        s = x*x + y*y;
+    } while(s > 1.0 || s == 0);
+
+    double sample = sqrt(variance) * x * sqrt(-2 * log(s) / s);
+    return (sample);
 }
 
 bool World::check_if_outside(Particle &p) {

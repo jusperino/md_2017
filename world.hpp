@@ -76,6 +76,13 @@ public:
     void random_particle_velocities();
 
     /**
+     * @brief generate sample from centered normal distribution with variance provided
+     *
+     * @param variance of normal distribution
+     */
+    double normal_sample(double variance);
+    
+    /**
      * @brief returns true if the particle is outside the simulation area
      *
      * @param particle to check
@@ -138,6 +145,8 @@ public:
     real e_pot;
     /// total energy
     real e_tot;
+    /// system temperature
+    real temp;
     /*
      *	/// Vector of particles
      *	std::vector<Particle> particles;
