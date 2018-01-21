@@ -150,29 +150,16 @@ void World::read_Parameter(const std::string &filename) {
 }
 
 void World::generate_subdomain_cells() {
-    // calculate global sequential indices of the cells in this subdomain
-    // for each of those, calculate the global sequential indices of the adjacent cells
+    // this function does two things: calculate the neighbours of this process, and calculate the neighbours of each cell
 
-    // generate displacement modifiers dimension-wise
-    std::vector<std::vector<int>> displacement;
-
-    for (int j1 = -1; j1<2; ++j1) {
-        for (int j2 = -1; j2<2; ++j2) {
-            for (int j3 = -1; j3<2; ++j3) {
-                    std::vector<int> comb(3);
-                    comb[0] = j1;
-                    comb[1] = j2;
-                    comb[2] = j3;
-                    displacement.push_back(comb);
-            }
-        }
-    }
-
+    // get process coordinates from process rank
     std::vector<int> j = get_subd_dim_index(S.myrank);
 
     // while at it, fill the subdomain class parameters with their values
     std::copy(j.begin(), j.end(), S.ip);
     for (int i = 0; i<DIM; ++i) {
+
+        // get process coordinates of lower and upper neighbor
         std::vector<int> lower(DIM);
         std::vector<int> upper(DIM);
         
@@ -183,6 +170,7 @@ void World::generate_subdomain_cells() {
         lower[i] = S.ip[i] - 1;
         upper[i] = S.ip[i] + 1;
 
+        // depending on border type, make sure that edge processes get assigned -1 if no neighboring process exists
         if (upper_border[i] == periodic) {
             upper[i] -= S.proc_per_dim[i];
             S.ip_upper[i] = get_process_rank_procdim(upper);
@@ -205,12 +193,28 @@ void World::generate_subdomain_cells() {
             }
         }
 
-        std::cout << i+1 << ": " << S.ip_lower[i] << "," << S.myrank << "," << S.ip_upper[i] << "   " << S.myrank << std::endl;
+        //std::cout << i+1 << ": " << S.ip_lower[i] << "," << S.myrank << "," << S.ip_upper[i] << "   " << S.myrank << std::endl;
 
         S.ic_start[i] = 1;      // assume particle cannot pass through an entire cell in one timestep 
         S.ic_stop[i] = S.ic_start[i] + S.N_p[i];
         S.ic_number[i] = S.N_p[i] + 2*S.ic_start[i];
         S.ic_lower_global[i] = S.ip[i] * S.N_p[i] - S.ic_start[i]; // each subdomain is the same size, as are the cells
+    }
+
+
+    // generate displacement modifiers dimension-wise
+    std::vector<std::vector<int>> displacement;
+
+    for (int j1 = -1; j1<2; ++j1) {
+        for (int j2 = -1; j2<2; ++j2) {
+            for (int j3 = -1; j3<2; ++j3) {
+                    std::vector<int> comb(3);
+                    comb[0] = j1;
+                    comb[1] = j2;
+                    comb[2] = j3;
+                    displacement.push_back(comb);
+            }
+        }
     }
 
     for (int k1 = j[0]*S.N_p[0]; k1 < (j[0]+1)*S.N_p[0]; ++k1) {
@@ -229,7 +233,13 @@ void World::generate_subdomain_cells() {
                     nborcand[2] = k3+disp[2];
                     bool valid = true;
                     for (int i = 0; i<DIM; ++i){
-                        if (nborcand[i] < 0 || nborcand[i] > cell_N[i]-1) {
+                        if (lower_border[i] == periodic && nborcand[i]<0){
+                            nborcand[i] += cell_N[i];
+                        }
+                        if (lower_border[i] == periodic && nborcand[i]>cell_N[i]-1){
+                            nborcand[i] -= cell_N[i];
+                        }
+                        else if (nborcand[i] < 0 || nborcand[i] > cell_N[i]-1) {
                             valid = false;
                         }
                     }
