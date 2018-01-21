@@ -44,14 +44,20 @@ void VelocityVerlet::timestep(real delta_t) {
     // increase time
     W.t += delta_t;
 
-    // set total energy
-    real e_tot_loc = W.e_pot + W.e_kin;
+	real local_energy[2] = {W.e_tot,W.e_kin};
+	real global_energy[2];
 
-    // communicate total system energy
-    MPI::COMM_WORLD.Allreduce(&e_tot_loc, &W.e_tot, 1, MPI_DOUBLE, MPI_SUM);
+    // communicate system energy
+    MPI::COMM_WORLD.Allreduce(&local_energy, &global_energy, 2, MPI_DOUBLE, MPI_SUM);
 
-    // TODO: ALLREDUCE particle count
-    W.temp = W.e_tot * 2 / (3*W.global_particle_count) // todo: ALLREDUCE
+    // calculate system total energy
+    W.e_tot = global_energy[0] + global_energy[1];
+
+    // communicate system particle count
+    MPI::COMM_WORLD.Allreduce(&W.particle_count, &W.global_particle_count, 1, MPI_DOUBLE, MPI_SUM);
+
+    // calculate system temperature
+    W.temp = global_energy[1] * 2 / (3*W.global_particle_count);
 
 
     // notify observer if output_interval is reached
