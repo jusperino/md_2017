@@ -217,13 +217,13 @@ void World::generate_subdomain_cells() {
         }
     }
 
-    for (int k1 = j[0]*S.N_p[0]; k1 < (j[0]+1)*S.N_p[0]; ++k1) {
+    for (int k1 = j[0]*S.N_p[0]; k1 < (j[0]+1)*S.N_p[0]; ++k1) {        // loop over every cell in subdomain
         for (int k2 = j[1]*S.N_p[1]; k2 < (j[1]+1)*S.N_p[1]; ++k2) {
             for (int k3 = j[2]*S.N_p[2]; k3 < (j[2]+1)*S.N_p[2]; ++k3) {
 
-                std::vector<int> v {k1,k2,k3};
+                std::vector<int> v {k1,k2,k3};  // coordinates (=dim-indices) of cell
                 int K = get_cell_index(v);
-                S.cells.push_back(K);
+                S.cells.push_back(K);           // append sequential cell index to list of cell indices
 
                 std::vector<int> nborcand(3,0);
                 for (auto &disp: displacement) {
@@ -231,6 +231,8 @@ void World::generate_subdomain_cells() {
                     nborcand[0] = k1+disp[0];
                     nborcand[1] = k2+disp[1];
                     nborcand[2] = k3+disp[2];
+
+                    // in case of periodic borders, adjust neighbor
                     bool valid = true;
                     for (int i = 0; i<DIM; ++i){
                         if (lower_border[i] == periodic && nborcand[i]<0){
