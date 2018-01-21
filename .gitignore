@@ -10,3 +10,4 @@ blatt1
 *.particle
 hello_world.cpp
 .DS_Store
+b3_periodic.statistics false
