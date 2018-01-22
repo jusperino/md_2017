@@ -48,7 +48,7 @@ void VelocityVerlet::timestep(real delta_t) {
     real e_tot_loc = W.e_pot + W.e_kin;
 
     // communicate total system energy
-    MPI::COMM_WORLD.Allreduce(&e_tot_loc, &W.e_tot, 1, MPI_DOUBLE, MPI_SUM);
+    // MPI::COMM_WORLD.Allreduce(&e_tot_loc, &W.e_tot, 1, MPI_DOUBLE, MPI_SUM);
 
     // notify observer if output_interval is reached
     if (t_count%W.output_interval == 0) {
@@ -274,27 +274,95 @@ void VelocityVerlet::exch_block(std::vector<int> I, std::vector<int> J, int ip){
 	// block to be exchanged is spanned by cells I and J
 	// they represent intervals [I[DIM],J[DIM]) in every dimension
 	// loop over every cell in the block, send and receive cell data
+	int MAX_NUMBERS = W.particle_count*(3+DIM*4);
+	int n_particles = 0;
+
 	while(I[DIM-1] < J[DIM-1]){
 		while(I[DIM-2] < J[DIM-2]){
 			while(DIM == 2 || I[DIM-3] < J[DIM-3]){
 				int c = W.get_cell_index(I);
-				//std::cout << "send from " << S.myrank << " to " << ip << std::endl;
-				if(S.myrank%2 == 0){
-					send_cell(c, ip);
-					recv_cell(ip);
-				}
-				else{
-					recv_cell(ip);
-					send_cell(c, ip);
-				}
-
+				n_particles += W.cells[c].particles.size();
 				if(DIM == 3) I[DIM-3]++;
 			}
-
 		I[DIM-2]++;
+		}
+	I[DIM-1]++;
 	}
 
-	I[DIM-1]++;
+	int n_send = n_particles*(3+DIM*4);
+	real msg_send[n_send];
+
+	int i = 0;
+	while(I[DIM-1] < J[DIM-1]){
+		while(I[DIM-2] < J[DIM-2]){
+			while(DIM == 2 || I[DIM-3] < J[DIM-3]){
+				int c = W.get_cell_index(I);
+				for(auto &p: W.cells[c].particles){
+					msg_send[i] = c;
+					i++;
+					const char* temp = p.id.c_str();
+					msg_send[i] = atof(temp);
+					i++;
+					msg_send[i] = p.m;
+					i++;
+					for(int d=0; d<DIM; d++){
+						msg_send[i] = p.x[d];
+						i++;
+						msg_send[i] = p.v[d];
+						i++;
+						msg_send[i] = p.F[d];
+						i++;
+						msg_send[i] = p.F_old[d];
+						i++;
+					}
+				}
+				if(DIM == 3) I[DIM-3]++;
+
+			}
+			I[DIM-2]++;
+		}
+		I[DIM-1]++;
+	}
+
+	real msg_recv[MAX_NUMBERS];
+	int msg_count;
+	MPI_Status status;
+	if(S.myrank%2 == 0){
+		MPI_Recv(&msg_recv, MAX_NUMBERS, MPI_DOUBLE, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
+		MPI_Get_count(&status, MPI_DOUBLE, &msg_count);
+		MPI_Send(&msg_send, n_send, MPI_DOUBLE, ip, 0, MPI_COMM_WORLD);
+	}
+	else{
+		MPI_Send(&msg_send, n_send, MPI_DOUBLE, ip, 0, MPI_COMM_WORLD);
+		MPI_Recv(&msg_recv, MAX_NUMBERS, MPI_DOUBLE, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
+		MPI_Get_count(&status, MPI_DOUBLE, &msg_count);
+	}
+
+	int j = 0;
+	std::vector<bool> clear (W.cells.size(), true);
+	while(j<msg_count){
+		Particle p;
+		int cell_id = msg_recv[j];
+		if(clear[cell_id]){
+			W.cells[cell_id].particles.clear();
+			clear[cell_id] = false;
+		}
+		j++;
+		p.id = msg_recv[j];
+		j++;
+		p.m = msg_recv[j];
+		j++;
+		for(int d=0; d<DIM; d++){
+			p.x[d] = msg_recv[j];
+			j++;
+			p.v[d] = msg_recv[j];
+			j++;
+			p.F[d] = msg_recv[j];
+			j++;
+			p.F_old[d] = msg_recv[j];
+			j++;
+		}
+		W.cells[cell_id].particles.push_back(p);
 	}
 }
 
@@ -306,31 +374,32 @@ void VelocityVerlet::exch_bord(){
 	std::vector<int> I (DIM);
 	std::vector<int> J (DIM);
 
-	// lower, x3
-	if(S.ip_lower[DIM-1] != -1){ 				// check if there is a neighboring process
-		for(int i=0; i < DIM; i++){
-			I[i] = S.ic_lower_global[i] + S.ic_start[i];
+	if(DIM == 3){
+		// lower, x3
+		if(S.ip_lower[DIM-1] != -1){ 				// check if there is a neighboring process
+			for(int i=0; i < DIM; i++){
+				I[i] = S.ic_lower_global[i] + S.ic_start[i];
+			}
+
+			J[DIM-1] = S.ic_lower_global[DIM-1] + 2*S.ic_start[DIM-1];
+			J[DIM-2] = S.ic_lower_global[DIM-2] + S.ic_stop[DIM-2];
+			J[DIM-3] = S.ic_lower_global[DIM-3] + S.ic_stop[DIM-3];
+
+			exch_block(I, J, S.ip_lower[DIM-1]);
+
 		}
+		// upper, x3
+		if(S.ip_upper[DIM-1] != -1){
+			I[DIM-1] = S.ic_lower_global[DIM-1] + S.ic_stop[DIM-1] - S.ic_start[DIM-1];
+			I[DIM-2] = S.ic_lower_global[DIM-2] + S.ic_start[DIM-2];
+			I[DIM-3] = S.ic_lower_global[DIM-3] + S.ic_start[DIM-3];
 
-		J[DIM-1] = S.ic_lower_global[DIM-1] + 2*S.ic_start[DIM-1];
-		J[DIM-2] = S.ic_lower_global[DIM-2] + S.ic_stop[DIM-2];
-		if(DIM == 3) J[DIM-3] = S.ic_lower_global[DIM-3] + S.ic_stop[DIM-3];
+			for(int i=0; i < DIM; i++){
+				J[i] = S.ic_lower_global[i] + S.ic_stop[i];
+			}
 
-		exch_block(I, J, S.ip_lower[DIM-1]);
-
-	}
-	// upper, x3
-	if(S.ip_upper[DIM-1] != -1){
-		I[DIM-1] = S.ic_lower_global[DIM-1] + S.ic_stop[DIM-1];
-		I[DIM-2] = S.ic_lower_global[DIM-2] + S.ic_start[DIM-2];
-		if(DIM == 3) I[DIM-3] = S.ic_lower_global[DIM-3] + S.ic_start[DIM-3];
-
-		for(int i=0; i < DIM; i++){
-			J[i] = S.ic_lower_global[i] + S.ic_stop[i];
+			exch_block(I, J, S.ip_upper[DIM-1]);
 		}
-
-		exch_block(I, J, S.ip_upper[DIM-1]);
-
 	}
 
 	// lower, x2
@@ -340,7 +409,7 @@ void VelocityVerlet::exch_bord(){
 		if(DIM == 3) I[DIM-3] = S.ic_lower_global[DIM-3] + S.ic_start[DIM-3];
 
 		J[DIM-1] = S.ic_lower_global[DIM-1] + S.ic_number[DIM-1];
-		J[DIM-2] = S.ic_lower_global[DIM-2] + S.ic_start[DIM-2];
+		J[DIM-2] = S.ic_lower_global[DIM-2] + 2*S.ic_start[DIM-2];
 		if(DIM == 3) J[DIM-3] = S.ic_lower_global[DIM-3] + S.ic_stop[DIM-3];
 
 		exch_block(I, J, S.ip_lower[DIM-2]);
@@ -360,33 +429,32 @@ void VelocityVerlet::exch_bord(){
 	}
 
 	// lower, x1
-	if(DIM == 3){
-		if(S.ip_lower[DIM-3] != -1){
-			I[DIM-1] = S.ic_lower_global[DIM-1];
-			I[DIM-2] = S.ic_lower_global[DIM-2];
-			I[DIM-3] = S.ic_lower_global[DIM-3] + S.ic_start[DIM-3];
+	if(S.ip_lower[DIM-3] != -1){
+		I[DIM-1] = S.ic_lower_global[DIM-1];
+		I[DIM-2] = S.ic_lower_global[DIM-2];
+		I[DIM-3] = S.ic_lower_global[DIM-3] + S.ic_start[DIM-3];
 
-			J[DIM-1] = S.ic_lower_global[DIM-1] + S.ic_number[DIM-1];
-			J[DIM-2] = S.ic_lower_global[DIM-2] + S.ic_number[DIM-2];
-			J[DIM-3] = S.ic_lower_global[DIM-3] + 2*S.ic_start[DIM-3];
+		J[DIM-1] = S.ic_lower_global[DIM-1] + S.ic_number[DIM-1];
+		J[DIM-2] = S.ic_lower_global[DIM-2] + S.ic_number[DIM-2];
+		J[DIM-3] = S.ic_lower_global[DIM-3] + 2*S.ic_start[DIM-3];
 
-			exch_block(I, J, S.ip_lower[DIM-3]);
-		}
+		exch_block(I, J, S.ip_lower[DIM-3]);
+	}
 
-		// upper, x1
-		if(S.ip_upper[DIM-3] != -1){
-			I[DIM-1] = S.ic_lower_global[DIM-1];
-			I[DIM-2] = S.ic_lower_global[DIM-2];
-			I[DIM-3] = S.ic_lower_global[DIM-3] + S.ic_stop[DIM-3] - S.ic_start[DIM-3];
+	// upper, x1
+	if(S.ip_upper[DIM-3] != -1){
+		I[DIM-1] = S.ic_lower_global[DIM-1];
+		I[DIM-2] = S.ic_lower_global[DIM-2];
+		I[DIM-3] = S.ic_lower_global[DIM-3] + S.ic_stop[DIM-3] - S.ic_start[DIM-3];
 
-			J[DIM-1] = S.ic_lower_global[DIM-1] + S.ic_number[DIM-1];
-			J[DIM-2] = S.ic_lower_global[DIM-2] + S.ic_number[DIM-2];
-			I[DIM-3] = S.ic_lower_global[DIM-3] + S.ic_stop[DIM-3];
+		J[DIM-1] = S.ic_lower_global[DIM-1] + S.ic_number[DIM-1];
+		J[DIM-2] = S.ic_lower_global[DIM-2] + S.ic_number[DIM-2];
+		I[DIM-3] = S.ic_lower_global[DIM-3] + S.ic_stop[DIM-3];
 
-			exch_block(I, J, S.ip_upper[DIM-3]);
-		}
+		exch_block(I, J, S.ip_upper[DIM-3]);
 	}
 }
+
 
 
 
