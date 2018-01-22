@@ -102,19 +102,35 @@ void VelocityVerlet::comp_F() {
 void VelocityVerlet::update_V() {
 	// set kinetic energy to 0 in respect of conservation of energy
 	W.e_kin_local = 0;
-	real beta;
-
-	if (W.thermostat && t_count%W.temp_interval == 0) beta=sqrt(W.temp_target/W.temp);
-	else beta=1;
 
 	// update velocity v for each particle in each dimension and sum up kinetic energy
     for (auto &c: S.cells){
         for (auto &p: W.cells[c].particles){
             for(size_t i = 0; i<DIM; i++){
-                p.v[i] = (p.v[i] + W.delta_t * 0.5 / p.m * (p.F[i] + p.F_old[i]))*beta;
+                p.v[i] = p.v[i] + W.delta_t * 0.5 / p.m * (p.F[i] + p.F_old[i]);
                 W.e_kin_local += 0.5 * p.m * sqr(p.v[i]);
             }
         }
+    }
+
+
+    if (W.thermostat && t_count%W.temp_interval == 0){
+    	// when thermostat timestep is reached, calculate current temp
+    	exchange_statistics();
+
+    	W.e_kin_local = 0;
+    	
+    	real beta = sqrt(W.temp_target/W.temp);
+    	
+    	// scale velocities according to current kinetic energy
+    	for (auto &c: S.cells){
+        	for (auto &p: W.cells[c].particles){
+            	for(size_t i = 0; i<DIM; i++){
+                	p.v[i] *= beta;
+                	W.e_kin_local += 0.5 * p.m * sqr(p.v[i]);
+            	}
+        	}
+    	}
     }
 }
 
