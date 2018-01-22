@@ -32,6 +32,16 @@ public:
     VelocityVerlet(Subdomain& S, World& _W, Potential* _Pot, Observer &_O);
 
     /**
+     * @brief exchange energy and temperature statistics between processes
+     */
+    virtual void exchange_statistics();
+
+    /**
+     * @brief calculate kinetic energy of the process
+     */
+    virtual void comp_e_kin();
+
+    /**
      * @brief run a single timestep
      *
      * @param delta_t length of the timestep
@@ -89,7 +99,6 @@ protected:
 private:
     VelocityVerlet();
     int t_count;
-    int energieAvaregeRange;
 };
 
 #endif // _VELOCITYVERLET_HPP

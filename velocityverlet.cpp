@@ -1,6 +1,8 @@
 #include "velocityverlet.hpp"
 #include <string>
 #include <sstream>
+#include <algorithm>
+#include <math.h>
 
 
 VelocityVerlet::VelocityVerlet(Subdomain& S, World& _W, Potential& _Pot, Observer& _O) : TimeDiscretization(S,_W,_Pot,_O) {
@@ -17,13 +19,15 @@ void VelocityVerlet::simulate() {
     // zaehler wie lange der letze output her ist
 	// wenn output_interval erreicht ist wir er auf null zueruck gesetzt und ein output gemacht
 
-	if (W.output_interval<100) energieAvaregeRange=W.output_interval
-	else energieAvaregeRange=100
+	W.energy_interval = std::min(W.output_interval, 100);
 
 	t_count = 1;
 
 	// initial calculation of forces
 	comp_F();
+	comp_e_kin();
+	exchange_statistics();
+	O.notify();
 
     // simulate over set timeperiod as long as particles are left
     while (W.t < W.t_end) {
@@ -46,44 +50,34 @@ void VelocityVerlet::timestep(real delta_t) {
     // increase time
     W.t += delta_t;
 
-	real local_energy[2] = {W.e_tot,W.e_kin};
-	real global_energy[2];
-
-    // communicate system energy
-    MPI::COMM_WORLD.Allreduce(&local_energy, &global_energy, 2, MPI_DOUBLE, MPI_SUM);
-
-    // calculate system total energy
-    W.e_tot = global_energy[0] + global_energy[1];
-
-    // communicate system particle count
-    MPI::COMM_WORLD.Allreduce(&W.particle_count, &W.global_particle_count, 1, MPI_DOUBLE, MPI_SUM);
-
-    // calculate system temperature
-    W.temp = global_energy[1] * 2 / (3*W.global_particle_count);
+    exchange_statistics();
 
 	
-
-	if ( t_count%W.output_interval-energieAvaregeRange < t_count%W.output_interval <=0){
-		W.past_e_pot+=W.e_pot;
-		W.past_e_kin+=W.e_kin;
+	// check whether t_count is in the last energy_interval steps before output
+	// calculate cumulatives only then
+	if (W.output_interval-W.energy_interval < t_count%W.output_interval){
+		W.past_e_pot+=W.e_pot_global;
+		W.past_e_kin+=W.e_kin_global;
 	} 
 
     // notify observer if output_interval is reached
     if (t_count%W.output_interval == 0) {
-		W.e_kin=W.past_e_kin/energieAvaregeRange;
-		W.e_pot=W.past_e_pot/energieAvaregeRange;
-		
+
+    	// since the previous check returns 0 on an output step, add this steps energy to cumulatives
+    	W.past_e_pot+=W.e_pot_global;
+		W.past_e_kin+=W.e_kin_global;
+
     	O.notify();
 
-		W.past_e_pot=0
-    	W.past_e_kin=0
+		W.past_e_pot=0;
+    	W.past_e_kin=0;
     }
 }
 
 void VelocityVerlet::comp_F() {
 
 	// set potential energy to 0 in respect of conservation of energy
-	W.e_pot = 0;
+	W.e_pot_local = 0;
 
 	//exch_bord();
 
@@ -96,7 +90,7 @@ void VelocityVerlet::comp_F() {
             for (auto &n: W.cells[c].adj_cells){
                 for (auto &q: W.cells[n].particles){
                     if (&p != &q){
-                        W.e_pot += 0.5*Pot.force(p, q);
+                        W.e_pot_local += 0.5*Pot.force(p, q);
                         // multiply potential by 0.5, as system potential energy is the sum of *unordered* pairwise potential
                     }
                 }
@@ -107,23 +101,21 @@ void VelocityVerlet::comp_F() {
 
 void VelocityVerlet::update_V() {
 	// set kinetic energy to 0 in respect of conservation of energy
-	W.e_kin = 0;
-	real betha
-	if (t_count%W.temp_interval == 0 && W.temp_calc) betha=squarroot(W_target/W.temp)
-	else betha=1
+	W.e_kin_local = 0;
+	real beta;
+
+	if (W.thermostat && t_count%W.temp_interval == 0) beta=sqrt(W.temp_target/W.temp);
+	else beta=1;
+
 	// update velocity v for each particle in each dimension and sum up kinetic energy
     for (auto &c: S.cells){
         for (auto &p: W.cells[c].particles){
-			 
-
             for(size_t i = 0; i<DIM; i++){
-                p.v[i] = (p.v[i] + W.delta_t * 0.5 / p.m * (p.F[i] + p.F_old[i]))*betha;
-                W.e_kin += 0.5 * p.m * sqr(p.v[i]);
+                p.v[i] = (p.v[i] + W.delta_t * 0.5 / p.m * (p.F[i] + p.F_old[i]))*beta;
+                W.e_kin_local += 0.5 * p.m * sqr(p.v[i]);
             }
         }
     }
-
-    
 }
 
 void VelocityVerlet::update_X() {
@@ -176,6 +168,34 @@ void VelocityVerlet::update_Cells() {
     }
 }
 
+void VelocityVerlet::exchange_statistics(){
+	real local_energy[2] = {W.e_pot_local,W.e_kin_local};
+	real global_energy[2];
+
+    // communicate system energy
+    MPI::COMM_WORLD.Allreduce(&local_energy, &global_energy, 2, MPI_DOUBLE, MPI_SUM);
+
+    // calculate system total energy
+    W.e_pot_global = global_energy[0];
+    W.e_kin_global = global_energy[1];
+    W.e_tot_global = W.e_pot_global + W.e_kin_global;
+
+    // communicate system particle count
+    MPI::COMM_WORLD.Allreduce(&W.particle_count, &W.global_particle_count, 1, MPI_INT, MPI_SUM);
+
+    // calculate system temperature
+    W.temp = W.e_kin_global * 2 / (3*W.global_particle_count);
+}
+
+void VelocityVerlet::comp_e_kin(){
+	for (auto &c: S.cells){
+        for (auto &p: W.cells[c].particles){
+            for(size_t i = 0; i<DIM; i++){
+                W.e_kin_local += 0.5 * p.m * sqr(p.v[i]);
+            }
+        }
+    }
+}
 void VelocityVerlet::send_cell(int ic, int ip){
 	// strstr stores the particle information as a buffer
 	//std::stringstream strstr;
