@@ -21,6 +21,7 @@ void VelocityVerlet::simulate() {
 	else energieAvaregeRange=100
 
 	t_count = 1;
+	
 
 	// initial calculation of forces
 	comp_F();
