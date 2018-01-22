@@ -88,7 +88,6 @@ protected:
 
 private:
     VelocityVerlet();
-    int numberOfTimestepsSinceOutput;
     int t_count;
     int energieAvaregeRange;
 };

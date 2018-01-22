@@ -16,7 +16,6 @@ void VelocityVerlet::simulate() {
 
     // zaehler wie lange der letze output her ist
 	// wenn output_interval erreicht ist wir er auf null zueruck gesetzt und ein output gemacht
-	numberOfTimestepsSinceOutput=W.output_interval;
 
 	if (W.output_interval<100) energieAvaregeRange=W.output_interval
 	else energieAvaregeRange=100
