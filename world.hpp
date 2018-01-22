@@ -139,16 +139,22 @@ public:
     BorderType upper_border[DIM];
     /// lower world border flags
     BorderType lower_border[DIM];
-    /// kinetic energy
-    real e_kin;
-	/// speicher für letzten kinetischen energien
-    real past_e_kin
-    /// potential energy
-    real e_pot;
-    /// speicher für letzten potenziellen energien
-    real past_e_pot
-    /// total energy
-    real e_tot;
+    /// kinetic energy, local to process
+    real e_kin_local;
+    /// kinetic energy, global
+    real e_kin_global;
+    /// speicher für letzten kinetischen energien, kumulativ über energy_interval, global
+    real past_e_kin;
+    /// potential energy, local to process
+    real e_pot_local;
+    /// potential energy, local to process
+    real e_pot_global;
+    /// speicher für letzten potenziellen energien, kumulativ über energy_interval, global
+    real past_e_pot;
+    /// total energy, local to process
+    real e_tot_local;
+    /// total energy, local to process
+    real e_tot_global;
     /// system temperature
     real temp;
     /*
@@ -172,6 +178,8 @@ public:
     real sigma;
     /// interval in which observer is notified and output produced
     int output_interval;
+    /// determine whether temp adjustment is desired
+    bool thermostat;
     /// initial system temperature (T)
     real temp_start;
     /// target system temperature (T_d)
@@ -180,6 +188,8 @@ public:
     int temp_interval;
     /// seed value for random number generator initialisation
     double random_seed;
+    /// interval for temp updating
+    int energy_interval;
 
 protected:
     Subdomain &S;

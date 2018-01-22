@@ -8,8 +8,10 @@
 #include <cstdlib>
 #include "subdomain.hpp"
 
-World::World(Subdomain &S) : name("unknown"),t(0),delta_t(0),t_end(0),e_kin(0),e_pot(0),e_tot(0),S(S),past_e_kin(0),past_e_pot(0) {
-    // empty constructor
+World::World(Subdomain &S) : name("unknown"),t(0),delta_t(0),t_end(0),e_kin_local(0),e_pot_local(0),e_tot_local(0),S(S) {
+    thermostat = false;
+    past_e_kin = 0;
+    past_e_pot = 0;
 }
 
 void World::read_Parameter(const std::string &filename) {
@@ -109,10 +111,12 @@ void World::read_Parameter(const std::string &filename) {
 
         if (option=="thermostat_step_interval"){
             strstr >> temp_interval;
+            thermostat = true;
         }
 
         if (option=="thermostat_target_temperature"){
             strstr >> temp_target;
+            thermostat = true;
         }
 
         if (option=="random_seed"){
