@@ -108,16 +108,22 @@ void VelocityVerlet::comp_F() {
 void VelocityVerlet::update_V() {
 	// set kinetic energy to 0 in respect of conservation of energy
 	W.e_kin = 0;
-
+	real betha
+	if (t_count%W.temp_interval == 0 && W.temp_calc) betha=squarroot(W_target/W.temp)
+	else betha=1
 	// update velocity v for each particle in each dimension and sum up kinetic energy
     for (auto &c: S.cells){
         for (auto &p: W.cells[c].particles){
+			 
+
             for(size_t i = 0; i<DIM; i++){
-                p.v[i] = p.v[i] + W.delta_t * 0.5 / p.m * (p.F[i] + p.F_old[i]);
+                p.v[i] = (p.v[i] + W.delta_t * 0.5 / p.m * (p.F[i] + p.F_old[i]))*betha;
                 W.e_kin += 0.5 * p.m * sqr(p.v[i]);
             }
         }
     }
+
+    
 }
 
 void VelocityVerlet::update_X() {
