@@ -41,10 +41,12 @@ void Observer::output_statistics()
     // write statistics into the filestream, seperated with tabulars
     statistics
         << W.t << "\t"
-        << W.e_pot << "\t"
-        << W.e_kin << "\t"
-		<< W.e_tot << "\t"
+        << W.e_pot_global << "\t"
+        << W.e_kin_global << "\t"
+		<< W.e_tot_global << "\t"
         << W.temp << "\t"
+        << W.past_e_pot/W.energy_interval << "\t"
+        << W.past_e_kin/W.energy_interval << "\t"
         << std::endl;
 }
 
