@@ -46,7 +46,6 @@ void VelocityVerlet::timestep(real delta_t) {
     // increase time
     W.t += delta_t;
 
-	
 	real local_energy[2] = {W.e_tot,W.e_kin};
 	real global_energy[2];
 
