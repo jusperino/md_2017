@@ -18,6 +18,9 @@ void VelocityVerlet::simulate() {
 	// wenn output_interval erreicht ist wir er auf null zueruck gesetzt und ein output gemacht
 	numberOfTimestepsSinceOutput=W.output_interval;
 
+	if (W.output_interval<100) energieAvaregeRange=W.output_interval
+	else energieAvaregeRange=100
+
 	t_count = 1;
 
 	// initial calculation of forces
@@ -59,10 +62,22 @@ void VelocityVerlet::timestep(real delta_t) {
     // calculate system temperature
     W.temp = global_energy[1] * 2 / (3*W.global_particle_count);
 
+	
+
+	if ( t_count%W.output_interval-energieAvaregeRange < t_count%W.output_interval <=0){
+		W.past_e_pot+=W.e_pot;
+		W.past_e_kin+=W.e_kin;
+	} 
 
     // notify observer if output_interval is reached
     if (t_count%W.output_interval == 0) {
+		W.e_kin=W.past_e_kin/energieAvaregeRange;
+		W.e_pot=W.past_e_pot/energieAvaregeRange;
+		
     	O.notify();
+
+		W.past_e_pot=0
+    	W.past_e_kin=0
     }
 }
 

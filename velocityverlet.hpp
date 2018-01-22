@@ -90,6 +90,7 @@ private:
     VelocityVerlet();
     int numberOfTimestepsSinceOutput;
     int t_count;
+    int energieAvaregeRange;
 };
 
 #endif // _VELOCITYVERLET_HPP

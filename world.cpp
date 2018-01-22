@@ -8,7 +8,7 @@
 #include <cstdlib>
 #include "subdomain.hpp"
 
-World::World(Subdomain &S) : name("unknown"),t(0),delta_t(0),t_end(0),e_kin(0),e_pot(0),e_tot(0),S(S) {
+World::World(Subdomain &S) : name("unknown"),t(0),delta_t(0),t_end(0),e_kin(0),e_pot(0),e_tot(0),S(S),past_e_kin(0),past_e_pot(0) {
     // empty constructor
 }
 

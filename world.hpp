@@ -141,8 +141,12 @@ public:
     BorderType lower_border[DIM];
     /// kinetic energy
     real e_kin;
+	/// speicher für letzten kinetischen energien
+    real past_e_kin
     /// potential energy
     real e_pot;
+    /// speicher für letzten potenziellen energien
+    real past_e_pot
     /// total energy
     real e_tot;
     /// system temperature
