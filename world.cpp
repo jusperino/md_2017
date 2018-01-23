@@ -324,6 +324,26 @@ std::vector<int> World::determine_cell_coord(const Particle &p){
     return res;
 }
 
+bool World::check_cell_coord(std::vector<int> &v){
+	bool outside = false;
+	if(v[0] < 0 || v[0] >= length[0] || v[1] < 0 || v[1] >= length[2] || v[2] < 0 || v[2] >= length[2]){
+		outside = true;
+	}
+	if(outside){
+		for(int d=0; d<DIM; d++){
+			if(lower_border[d] == periodic && v[d] < 0){
+				v[d] += length[d];
+				outside = false;
+			}
+			if(upper_border[d] == periodic && v[d] >= length[d]){
+				v[d] -= length[d];
+				outside = false;
+			}
+		}
+	}
+	return outside;
+}
+
 void World::fill_Cell(const Particle &p){
 	// calculate cell index
     int J = determine_corr_cell(p);
@@ -337,8 +357,12 @@ void World::clear_BorderCells(){
 		for(int j = S.ic_lower_global[0]; j < S.ic_lower_global[0] + S.ic_number[0]; j++){
 			std::vector<int> lower {j, i, S.ic_lower_global[2]};
 			std::vector<int> upper {j, i, S.ic_lower_global[2]+S.ic_number[2]};
-			cells[get_cell_index(lower)].particles.clear();
-			cells[get_cell_index(upper)].particles.clear();
+			if(!check_cell_coord(lower)){
+				cells[get_cell_index(lower)].particles.clear();
+			}
+			if(!check_cell_coord(upper)){
+				cells[get_cell_index(upper)].particles.clear();
+			}
 		}
 	}
 
@@ -346,8 +370,12 @@ void World::clear_BorderCells(){
 		for(int j = S.ic_lower_global[0]; j < S.ic_lower_global[0] + S.ic_number[0]; j++){
 			std::vector<int> lower {j, S.ic_lower_global[1], i};
 			std::vector<int> upper {j, S.ic_lower_global[1]+S.ic_number[1], i};
-			cells[get_cell_index(lower)].particles.clear();
-			cells[get_cell_index(upper)].particles.clear();
+			if(!check_cell_coord(lower)){
+				cells[get_cell_index(lower)].particles.clear();
+			}
+			if(!check_cell_coord(upper)){
+				cells[get_cell_index(upper)].particles.clear();
+			}
 		}
 	}
 
@@ -355,8 +383,12 @@ void World::clear_BorderCells(){
 		for(int j = S.ic_lower_global[1] + S.ic_start[1]; j < S.ic_lower_global[1] + S.ic_stop[1]; j++){
 			std::vector<int> lower {S.ic_lower_global[0], j, i};
 			std::vector<int> upper {S.ic_lower_global[0]+S.ic_number[0], j, i};
-			cells[get_cell_index(lower)].particles.clear();
-			cells[get_cell_index(upper)].particles.clear();
+			if(!check_cell_coord(lower)){
+				cells[get_cell_index(lower)].particles.clear();
+			}
+			if(!check_cell_coord(upper)){
+				cells[get_cell_index(upper)].particles.clear();
+			}
 		}
 	}
 }
@@ -369,11 +401,15 @@ std::vector<int> World::BorderCell_Indices(int d, int s){
 			for(int j = S.ic_lower_global[0]; j < S.ic_lower_global[0] + S.ic_number[0]; j++){
 				if(s == -1){
 					std::vector<int> lower {j, i, S.ic_lower_global[2]};
-					output.push_back(get_cell_index(lower));
+					if(!check_cell_coord(lower)){
+						output.push_back(get_cell_index(lower));
+					}
 				}
 				else{
 					std::vector<int> upper {j, i, S.ic_lower_global[2]+S.ic_number[2]};
-					output.push_back(get_cell_index(upper));
+					if(!check_cell_coord(upper)){
+						output.push_back(get_cell_index(upper));
+					}
 				}
 			}
 		}
@@ -384,11 +420,15 @@ std::vector<int> World::BorderCell_Indices(int d, int s){
 			for(int j = S.ic_lower_global[0]; j < S.ic_lower_global[0] + S.ic_number[0]; j++){
 				if(s==-1){
 					std::vector<int> lower {j, S.ic_lower_global[1], i};
-					output.push_back(get_cell_index(lower));
+					if(!check_cell_coord(lower)){
+						output.push_back(get_cell_index(lower));
+					}
 				}
 				else{
 					std::vector<int> upper {j, S.ic_lower_global[1]+S.ic_number[1], i};
-					output.push_back(get_cell_index(upper));
+					if(!check_cell_coord(upper)){
+						output.push_back(get_cell_index(upper));
+					}
 				}
 			}
 		}
@@ -398,11 +438,15 @@ std::vector<int> World::BorderCell_Indices(int d, int s){
 			for(int j = S.ic_lower_global[1] + S.ic_start[1]; j < S.ic_lower_global[1] + S.ic_stop[1]; j++){
 				if(s==-1){
 					std::vector<int> lower {S.ic_lower_global[0], j, i};
-					output.push_back(get_cell_index(lower));
+					if(!check_cell_coord(lower)){
+						output.push_back(get_cell_index(lower));
+					}
 				}
 				else{
 					std::vector<int> upper {S.ic_lower_global[0]+S.ic_number[0], j, i};
-					output.push_back(get_cell_index(upper));
+					if(!check_cell_coord(upper)){
+						output.push_back(get_cell_index(upper));
+					}
 				}
 			}
 		}
@@ -418,11 +462,15 @@ std::vector<int> World::InsideBorder_Indices(int d, int s){
 			for(int j=S.ic_lower_global[0]+S.ic_start[0]; j<S.ic_lower_global[0]+S.ic_stop[0]; j++){
 				if(s==-1){
 					std::vector<int> v {j, i, S.ic_lower_global[2]};
-					output.push_back(get_cell_index(v));
+					if(!check_cell_coord(v)){
+						output.push_back(get_cell_index(v));
+					}
 				}
 				else{
 					std::vector<int> v {j, i, S.ic_lower_global[2]+S.ic_stop[2]};
-					output.push_back(get_cell_index(v));
+					if(!check_cell_coord(v)){
+						output.push_back(get_cell_index(v));
+					}
 				}
 			}
 		}
@@ -433,11 +481,15 @@ std::vector<int> World::InsideBorder_Indices(int d, int s){
 			for(int j=S.ic_lower_global[0]+S.ic_start[0]; j<S.ic_lower_global[0]+S.ic_stop[0]; j++){
 				if(s==-1){
 					std::vector<int> v {j, S.ic_lower_global[1] + S.ic_start[1], i};
-					output.push_back(get_cell_index(v));
+					if(!check_cell_coord(v)){
+						output.push_back(get_cell_index(v));
+					}
 				}
 				else{
 					std::vector<int> v {j, S.ic_lower_global[1]+S.ic_stop[1] - S.ic_start[1], i};
-					output.push_back(get_cell_index(v));
+					if(!check_cell_coord(v)){
+						output.push_back(get_cell_index(v));
+					}
 				}
 			}
 		}
@@ -448,11 +500,15 @@ std::vector<int> World::InsideBorder_Indices(int d, int s){
 			for(int j=S.ic_lower_global[1]; j<S.ic_lower_global[1]; j++){
 				if(s==-1){
 					std::vector<int> v {S.ic_lower_global[0] + S.ic_start[0], j, i};
-					output.push_back(get_cell_index(v));
+					if(!check_cell_coord(v)){
+						output.push_back(get_cell_index(v));
+					}
 				}
 				else{
 					std::vector<int> v {S.ic_lower_global[0]+S.ic_stop[0] - S.ic_start[0], j, i};
-					output.push_back(get_cell_index(v));
+					if(!check_cell_coord(v)){
+						output.push_back(get_cell_index(v));
+					}
 				}
 			}
 		}
@@ -522,11 +578,11 @@ void World::communicate_OutsideBorder(){
 	int MAX_NUMBER = particle_count*(3+DIM*4);
 
 	for(int d=0; d<DIM; d++){
-		if(S.ip_lower[DIM-d] != -1){
+		if(S.ip_lower[DIM-d] != -1 && S.ip_lower[DIM-d] != S.myrank){
 			real msg[MAX_NUMBER];
 			int ACTUAL_NUMBER = 0;
 
-			if(S.myrank%2 == 0){
+			if(S.myrank < S.ip_lower[DIM-d]){
 				MPI_Status status;
 				MPI_Recv(msg, MAX_NUMBER, MPI_DOUBLE, S.ip_lower[DIM-d], 0, MPI_COMM_WORLD, &status);
 				MPI_Get_count(&status, MPI_DOUBLE, &ACTUAL_NUMBER);
@@ -547,11 +603,11 @@ void World::communicate_OutsideBorder(){
 				Process_CellData(msg, ACTUAL_NUMBER);
 			}
 		}
-		if(S.ip_upper[DIM-d] != -1){
+		if(S.ip_upper[DIM-d] != -1 && S.ip_upper[DIM-d] != S.myrank){
 			real msg[MAX_NUMBER];
 			int ACTUAL_NUMBER = 0;
 
-			if(S.myrank%2 == 0){
+			if(S.myrank < S.ip_upper[DIM-d]){
 				MPI_Status status;
 				MPI_Recv(msg, MAX_NUMBER, MPI_DOUBLE, S.ip_upper[DIM-d], 0, MPI_COMM_WORLD, &status);
 				MPI_Get_count(&status, MPI_DOUBLE, &ACTUAL_NUMBER);
@@ -579,11 +635,11 @@ void World::communicate_InsideBorder(){
 	int MAX_NUMBER = particle_count*(3+DIM*4);
 
 	for(int d=0; d<DIM; d++){
-		if(S.ip_lower[DIM-d] != -1){
+		if(S.ip_lower[DIM-d] != -1 && S.ip_lower[DIM-d] != S.myrank){
 			real msg[MAX_NUMBER];
 			int ACTUAL_NUMBER = 0;
 
-			if(S.myrank%2 == 0){
+			if(S.myrank < S.ip_lower[DIM-d]){
 				MPI_Status status;
 				MPI_Recv(msg, MAX_NUMBER, MPI_DOUBLE, S.ip_lower[DIM-d], 0, MPI_COMM_WORLD, &status);
 				MPI_Get_count(&status, MPI_DOUBLE, &ACTUAL_NUMBER);
@@ -605,11 +661,11 @@ void World::communicate_InsideBorder(){
 			}
 		}
 
-		if(S.ip_upper[DIM-d] != -1){
+		if(S.ip_upper[DIM-d] != -1 && S.ip_upper[DIM-d] != S.myrank){
 			real msg[MAX_NUMBER];
 			int ACTUAL_NUMBER = 0;
 
-			if(S.myrank%2 == 0){
+			if(S.myrank < S.ip_upper[DIM-d]){
 				MPI_Status status;
 				MPI_Recv(msg, MAX_NUMBER, MPI_DOUBLE, S.ip_upper[DIM-d], 0, MPI_COMM_WORLD, &status);
 				MPI_Get_count(&status, MPI_DOUBLE, &ACTUAL_NUMBER);

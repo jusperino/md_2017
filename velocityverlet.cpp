@@ -48,7 +48,7 @@ void VelocityVerlet::timestep(real delta_t) {
     real e_tot_loc = W.e_pot + W.e_kin;
 
     // communicate total system energy
-    // MPI::COMM_WORLD.Allreduce(&e_tot_loc, &W.e_tot, 1, MPI_DOUBLE, MPI_SUM);
+    MPI::COMM_WORLD.Allreduce(&e_tot_loc, &W.e_tot, 1, MPI_DOUBLE, MPI_SUM);
 
     // notify observer if output_interval is reached
     if (t_count%W.output_interval == 0) {
@@ -61,8 +61,8 @@ void VelocityVerlet::comp_F() {
 	// set potential energy to 0 in respect of conservation of energy
 	W.e_pot = 0;
 
-	//W.clear_BorderCells();
-	//W.communicate_InsideBorder();
+	W.clear_BorderCells();
+	W.communicate_InsideBorder();
 
 	// calculate forces of particles pairwise and sum up potential energy
     for (auto &c: S.cells){
@@ -80,7 +80,7 @@ void VelocityVerlet::comp_F() {
 			}
 		}
 	}
-    //W.clear_BorderCells();
+    W.clear_BorderCells();
 }
 
 void VelocityVerlet::update_V() {
@@ -148,6 +148,6 @@ void VelocityVerlet::update_Cells() {
         }
     }
 
-    W.communicate_OutsideBorder();
+    //W.communicate_OutsideBorder();
 }
 // vim:set et sts=4 ts=4 sw=4 ai ci cin:

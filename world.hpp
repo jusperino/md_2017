@@ -103,6 +103,8 @@ public:
      */
     std::vector<int> determine_cell_coord(const Particle &p);
 
+    bool check_cell_coord(std::vector<int> &v);
+
     /**
      * @brief erases all particles in border cells outside the subdomain
      */
