@@ -61,7 +61,8 @@ void VelocityVerlet::comp_F() {
 	// set potential energy to 0 in respect of conservation of energy
 	W.e_pot = 0;
 
-	exch_bord();
+	//W.clear_BorderCells();
+	W.communicate_InsideBorder();
 
 	// calculate forces of particles pairwise and sum up potential energy
     for (auto &c: S.cells){
@@ -79,6 +80,7 @@ void VelocityVerlet::comp_F() {
 			}
 		}
 	}
+    //W.clear_BorderCells();
 }
 
 void VelocityVerlet::update_V() {
@@ -129,6 +131,7 @@ void VelocityVerlet::update_X() {
 }
 
 void VelocityVerlet::update_Cells() {
+
     for (auto &c: S.cells){
     	// use iterator to skip over moved/deleted particles
         auto p = W.cells[c].particles.begin();
@@ -144,6 +147,8 @@ void VelocityVerlet::update_Cells() {
             }
         }
     }
+
+    W.communicate_OutsideBorder();
 }
 
 void VelocityVerlet::send_particle(Particle &p, int ip, int ic){
@@ -288,10 +293,17 @@ void VelocityVerlet::exch_block(std::vector<int> I, std::vector<int> J, int ip){
 		}
 	I[DIM-1]++;
 	}
+<<<<<<< HEAD
 
 	int n_send = n_particles*(3+DIM*4);
 	real msg_send[n_send];
 
+=======
+
+	int n_send = n_particles*(3+DIM*4);
+	real msg_send[MAX_NUMBERS];
+
+>>>>>>> Blatt-4_Conflicted
 	int i = 0;
 	while(I[DIM-1] < J[DIM-1]){
 		while(I[DIM-2] < J[DIM-2]){
@@ -328,16 +340,30 @@ void VelocityVerlet::exch_block(std::vector<int> I, std::vector<int> J, int ip){
 	int msg_count;
 	MPI_Status status;
 	if(S.myrank%2 == 0){
+<<<<<<< HEAD
+=======
+		std::cout << "MPI even: " << S.myrank << std::endl;
+>>>>>>> Blatt-4_Conflicted
 		MPI_Recv(&msg_recv, MAX_NUMBERS, MPI_DOUBLE, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
 		MPI_Get_count(&status, MPI_DOUBLE, &msg_count);
 		MPI_Send(&msg_send, n_send, MPI_DOUBLE, ip, 0, MPI_COMM_WORLD);
 	}
 	else{
+<<<<<<< HEAD
+=======
+		std::cout << "MPI uneven: " << S.myrank << std::endl;
+>>>>>>> Blatt-4_Conflicted
 		MPI_Send(&msg_send, n_send, MPI_DOUBLE, ip, 0, MPI_COMM_WORLD);
 		MPI_Recv(&msg_recv, MAX_NUMBERS, MPI_DOUBLE, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
 		MPI_Get_count(&status, MPI_DOUBLE, &msg_count);
 	}
 
+<<<<<<< HEAD
+=======
+	std::cout << msg_count << " " << msg_recv[0] << std::endl;
+
+
+>>>>>>> Blatt-4_Conflicted
 	int j = 0;
 	std::vector<bool> clear (W.cells.size(), true);
 	while(j<msg_count){
@@ -363,6 +389,10 @@ void VelocityVerlet::exch_block(std::vector<int> I, std::vector<int> J, int ip){
 			j++;
 		}
 		W.cells[cell_id].particles.push_back(p);
+<<<<<<< HEAD
+=======
+		std::cout << "Received particle!" << std::endl;
+>>>>>>> Blatt-4_Conflicted
 	}
 }
 
