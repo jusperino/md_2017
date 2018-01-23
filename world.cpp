@@ -4,6 +4,7 @@
 #include <sstream>
 #include <string>
 #include <cmath>
+#include <mpi.h>
 #include "subdomain.hpp"
 
 World::World(Subdomain &S) : name("unknown"),t(0),delta_t(0),t_end(0),e_kin(0),e_pot(0),e_tot(0),S(S) {
@@ -330,6 +331,308 @@ void World::fill_Cell(const Particle &p){
 	// store particle in correct cell
 	cells[J].particles.push_back(p);
 }
+
+void World::clear_BorderCells(){
+	for(int i = S.ic_lower_global[1]; i < S.ic_lower_global[1] + S.ic_number[1]; i++){
+		for(int j = S.ic_lower_global[0]; j < S.ic_lower_global[0] + S.ic_number[0]; j++){
+			std::vector<int> lower {j, i, S.ic_lower_global[2]};
+			std::vector<int> upper {j, i, S.ic_lower_global[2]+S.ic_number[2]};
+			cells[get_cell_index(lower)].particles.clear();
+			cells[get_cell_index(upper)].particles.clear();
+		}
+	}
+
+	for(int i = S.ic_lower_global[2] + S.ic_start[2]; i < S.ic_lower_global[2] + S.ic_stop[2]; i++){
+		for(int j = S.ic_lower_global[0]; j < S.ic_lower_global[0] + S.ic_number[0]; j++){
+			std::vector<int> lower {j, S.ic_lower_global[1], i};
+			std::vector<int> upper {j, S.ic_lower_global[1]+S.ic_number[1], i};
+			cells[get_cell_index(lower)].particles.clear();
+			cells[get_cell_index(upper)].particles.clear();
+		}
+	}
+
+	for(int i = S.ic_lower_global[2] + S.ic_start[2]; i < S.ic_lower_global[2] + S.ic_stop[2]; i++){
+		for(int j = S.ic_lower_global[1] + S.ic_start[1]; j < S.ic_lower_global[1] + S.ic_stop[1]; j++){
+			std::vector<int> lower {S.ic_lower_global[0], j, i};
+			std::vector<int> upper {S.ic_lower_global[0]+S.ic_number[0], j, i};
+			cells[get_cell_index(lower)].particles.clear();
+			cells[get_cell_index(upper)].particles.clear();
+		}
+	}
+}
+
+std::vector<int> World::BorderCell_Indices(int d, int s){
+	std::vector<int> output;
+
+	if(d==3){
+		for(int i = S.ic_lower_global[1]; i < S.ic_lower_global[1] + S.ic_number[1]; i++){
+			for(int j = S.ic_lower_global[0]; j < S.ic_lower_global[0] + S.ic_number[0]; j++){
+				if(s == -1){
+					std::vector<int> lower {j, i, S.ic_lower_global[2]};
+					output.push_back(get_cell_index(lower));
+				}
+				else{
+					std::vector<int> upper {j, i, S.ic_lower_global[2]+S.ic_number[2]};
+					output.push_back(get_cell_index(upper));
+				}
+			}
+		}
+	}
+
+	if(d==2){
+		for(int i = S.ic_lower_global[2] + S.ic_start[2]; i < S.ic_lower_global[2] + S.ic_stop[2]; i++){
+			for(int j = S.ic_lower_global[0]; j < S.ic_lower_global[0] + S.ic_number[0]; j++){
+				if(s==-1){
+					std::vector<int> lower {j, S.ic_lower_global[1], i};
+					output.push_back(get_cell_index(lower));
+				}
+				else{
+					std::vector<int> upper {j, S.ic_lower_global[1]+S.ic_number[1], i};
+					output.push_back(get_cell_index(upper));
+				}
+			}
+		}
+	}
+	if(d==1){
+		for(int i = S.ic_lower_global[2] + S.ic_start[2]; i < S.ic_lower_global[2] + S.ic_stop[2]; i++){
+			for(int j = S.ic_lower_global[1] + S.ic_start[1]; j < S.ic_lower_global[1] + S.ic_stop[1]; j++){
+				if(s==-1){
+					std::vector<int> lower {S.ic_lower_global[0], j, i};
+					output.push_back(get_cell_index(lower));
+				}
+				else{
+					std::vector<int> upper {S.ic_lower_global[0]+S.ic_number[0], j, i};
+					output.push_back(get_cell_index(upper));
+				}
+			}
+		}
+	}
+	return output;
+}
+
+std::vector<int> World::InsideBorder_Indices(int d, int s){
+	std::vector<int> output;
+
+	if(d==3){
+		for(int i=S.ic_lower_global[1]+S.ic_start[1]; i<S.ic_lower_global[1]+S.ic_stop[1]; i++){
+			for(int j=S.ic_lower_global[0]+S.ic_start[0]; j<S.ic_lower_global[0]+S.ic_stop[0]; j++){
+				if(s==-1){
+					std::vector<int> v {j, i, S.ic_lower_global[2]};
+					output.push_back(get_cell_index(v));
+				}
+				else{
+					std::vector<int> v {j, i, S.ic_lower_global[2]+S.ic_stop[2]};
+					output.push_back(get_cell_index(v));
+				}
+			}
+		}
+	}
+
+	if(d==2){
+		for(int i=S.ic_lower_global[2]; i<S.ic_lower_global[2]+S.ic_number[2]; i++){
+			for(int j=S.ic_lower_global[0]+S.ic_start[0]; j<S.ic_lower_global[0]+S.ic_stop[0]; j++){
+				if(s==-1){
+					std::vector<int> v {j, S.ic_lower_global[1] + S.ic_start[1], i};
+					output.push_back(get_cell_index(v));
+				}
+				else{
+					std::vector<int> v {j, S.ic_lower_global[1]+S.ic_stop[1] - S.ic_start[1], i};
+					output.push_back(get_cell_index(v));
+				}
+			}
+		}
+	}
+
+	if(d==3){
+		for(int i=S.ic_lower_global[2]; i<S.ic_lower_global[2]+S.ic_number[2]; i++){
+			for(int j=S.ic_lower_global[1]; j<S.ic_lower_global[1]; j++){
+				if(s==-1){
+					std::vector<int> v {S.ic_lower_global[0] + S.ic_start[0], j, i};
+					output.push_back(get_cell_index(v));
+				}
+				else{
+					std::vector<int> v {S.ic_lower_global[0]+S.ic_stop[0] - S.ic_start[0], j, i};
+					output.push_back(get_cell_index(v));
+				}
+			}
+		}
+	}
+	return output;
+}
+
+void World::Process_CellData(real input[], const int &length){
+	int i = 0;
+
+	while(i < length){
+		int cell_id = input[i];
+		i++;
+
+		Particle p;
+		p.id = input[i];
+		i++;
+
+		p.m = input[i];
+		i++;
+
+		for(int d=0; d<DIM; d++){
+			p.x[d] = input[i];
+			i++;
+			p.v[d] = input[i];
+			i++;
+			p.F[d] = input[i];
+			i++;
+			p.F_old[d] = input[i];
+			i++;
+		}
+		cells[cell_id].particles.push_back(p);
+	}
+}
+
+int World::Fill_CellArray(real msg[], std::vector<int> &cc){
+	int ACTUAL_NUMBER = 0;
+	for(auto &p: cells[get_cell_index(cc)].particles){
+		msg[ACTUAL_NUMBER] = get_cell_index(cc);
+		ACTUAL_NUMBER++;
+
+		const char* temp = p.id.c_str();
+		msg[ACTUAL_NUMBER] = atof(temp);
+		ACTUAL_NUMBER++;
+
+		msg[ACTUAL_NUMBER] = p.m;
+		ACTUAL_NUMBER++;
+
+		for(int d=0; d<DIM; d++){
+			msg[ACTUAL_NUMBER] = p.x[d];
+			ACTUAL_NUMBER++;
+
+			msg[ACTUAL_NUMBER] = p.v[d];
+			ACTUAL_NUMBER++;
+
+			msg[ACTUAL_NUMBER] = p.F[d];
+			ACTUAL_NUMBER++;
+
+			msg[ACTUAL_NUMBER] = p.F_old[d];
+			ACTUAL_NUMBER++;
+		}
+	}
+	return ACTUAL_NUMBER;
+}
+
+void World::communicate_OutsideBorder(){
+	int MAX_NUMBER = particle_count*(3+DIM*4);
+
+	for(int d=0; d<DIM; d++){
+		if(S.ip_lower[DIM-d] != -1){
+			real msg[MAX_NUMBER];
+			int ACTUAL_NUMBER;
+
+			if(S.myrank%2 == 0){
+				MPI_Status status;
+				MPI_Recv(msg, MAX_NUMBER, MPI_DOUBLE, S.ip_lower[DIM-d], 0, MPI_COMM_WORLD, &status);
+				MPI_Get_count(&status, MPI_DOUBLE, &ACTUAL_NUMBER);
+				Process_CellData(msg, ACTUAL_NUMBER);
+
+				std::vector<int> ics (BorderCell_Indices(DIM-d, -1));
+				ACTUAL_NUMBER = Fill_CellArray(msg, ics);
+				MPI_Send(msg, ACTUAL_NUMBER, MPI_DOUBLE, S.ip_lower[DIM-d], 0, MPI_COMM_WORLD);
+			}
+			else{
+				std::vector<int> ics (BorderCell_Indices(DIM-d, -1));
+				ACTUAL_NUMBER = Fill_CellArray(msg, ics);
+				MPI_Send(msg, ACTUAL_NUMBER, MPI_DOUBLE, S.ip_lower[DIM-d], 0, MPI_COMM_WORLD);
+
+				MPI_Status status;
+				MPI_Recv(msg, MAX_NUMBER, MPI_DOUBLE, S.ip_lower[DIM-d], 0, MPI_COMM_WORLD, &status);
+				MPI_Get_count(&status, MPI_DOUBLE, &ACTUAL_NUMBER);
+				Process_CellData(msg, ACTUAL_NUMBER);
+			}
+		}
+		if(S.ip_upper[DIM-d] != -1){
+			real msg[MAX_NUMBER];
+			int ACTUAL_NUMBER;
+
+			if(S.myrank%2 == 0){
+				MPI_Status status;
+				MPI_Recv(msg, MAX_NUMBER, MPI_DOUBLE, S.ip_upper[DIM-d], 0, MPI_COMM_WORLD, &status);
+				MPI_Get_count(&status, MPI_DOUBLE, &ACTUAL_NUMBER);
+				Process_CellData(msg, ACTUAL_NUMBER);
+
+				std::vector<int> ics (BorderCell_Indices(DIM-d, 1));
+				ACTUAL_NUMBER = Fill_CellArray(msg, ics);
+				MPI_Send(msg, ACTUAL_NUMBER, MPI_DOUBLE, S.ip_upper[DIM-d], 0, MPI_COMM_WORLD);
+			}
+			else{
+				std::vector<int> ics (BorderCell_Indices(DIM-d, 1));
+				ACTUAL_NUMBER = Fill_CellArray(msg, ics);
+				MPI_Send(msg, ACTUAL_NUMBER, MPI_DOUBLE, S.ip_upper[DIM-d], 0, MPI_COMM_WORLD);
+
+				MPI_Status status;
+				MPI_Recv(msg, MAX_NUMBER, MPI_DOUBLE, S.ip_upper[DIM-d], 0, MPI_COMM_WORLD, &status);
+				MPI_Get_count(&status, MPI_DOUBLE, &ACTUAL_NUMBER);
+				Process_CellData(msg, ACTUAL_NUMBER);
+			}
+		}
+	}
+}
+
+void World::communicate_InsideBorder(){
+	int MAX_NUMBER = particle_count*(3+DIM*4);
+
+	for(int d=0; d<DIM; d++){
+		if(S.ip_lower[DIM-d] != -1){
+			real msg[MAX_NUMBER];
+			int ACTUAL_NUMBER;
+
+			if(S.myrank%2 == 0){
+				MPI_Status status;
+				MPI_Recv(msg, MAX_NUMBER, MPI_DOUBLE, S.ip_lower[DIM-d], 0, MPI_COMM_WORLD, &status);
+				MPI_Get_count(&status, MPI_DOUBLE, &ACTUAL_NUMBER);
+				Process_CellData(msg, ACTUAL_NUMBER);
+
+				std::vector<int> ics (InsideBorder_Indices(DIM-d, -1));
+				ACTUAL_NUMBER = Fill_CellArray(msg, ics);
+				MPI_Send(msg, ACTUAL_NUMBER, MPI_DOUBLE, S.ip_lower[DIM-d], 0, MPI_COMM_WORLD);
+			}
+			else{
+				std::vector<int> ics (InsideBorder_Indices(DIM-d, -1));
+				ACTUAL_NUMBER = Fill_CellArray(msg, ics);
+				MPI_Send(msg, ACTUAL_NUMBER, MPI_DOUBLE, S.ip_lower[DIM-d], 0, MPI_COMM_WORLD);
+
+				MPI_Status status;
+				MPI_Recv(msg, MAX_NUMBER, MPI_DOUBLE, S.ip_lower[DIM-d], 0, MPI_COMM_WORLD, &status);
+				MPI_Get_count(&status, MPI_DOUBLE, &ACTUAL_NUMBER);
+				Process_CellData(msg, ACTUAL_NUMBER);
+			}
+		}
+
+		if(S.ip_upper[DIM-d] != -1){
+			real msg[MAX_NUMBER];
+			int ACTUAL_NUMBER;
+
+			if(S.myrank%2 == 0){
+				MPI_Status status;
+				MPI_Recv(msg, MAX_NUMBER, MPI_DOUBLE, S.ip_upper[DIM-d], 0, MPI_COMM_WORLD, &status);
+				MPI_Get_count(&status, MPI_DOUBLE, &ACTUAL_NUMBER);
+				Process_CellData(msg, ACTUAL_NUMBER);
+
+				std::vector<int> ics (InsideBorder_Indices(DIM-d, 1));
+				ACTUAL_NUMBER = Fill_CellArray(msg, ics);
+				MPI_Send(msg, ACTUAL_NUMBER, MPI_DOUBLE, S.ip_upper[DIM-d], 0, MPI_COMM_WORLD);
+			}
+			else{
+				std::vector<int> ics (InsideBorder_Indices(DIM-d, 1));
+				ACTUAL_NUMBER = Fill_CellArray(msg, ics);
+				MPI_Send(msg, ACTUAL_NUMBER, MPI_DOUBLE, S.ip_upper[DIM-d], 0, MPI_COMM_WORLD);
+
+				MPI_Status status;
+				MPI_Recv(msg, MAX_NUMBER, MPI_DOUBLE, S.ip_upper[DIM-d], 0, MPI_COMM_WORLD, &status);
+				MPI_Get_count(&status, MPI_DOUBLE, &ACTUAL_NUMBER);
+				Process_CellData(msg, ACTUAL_NUMBER);
+			}
+		}
+	}
+}
+
 
 void World::read_Particles(const std::string &filename) {
      // create input filestream

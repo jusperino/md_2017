@@ -104,6 +104,26 @@ public:
     std::vector<int> determine_cell_coord(const Particle &p);
 
     /**
+     * @brief erases all particles in border cells outside the subdomain
+     */
+    void clear_BorderCells();
+
+    std::vector<int> BorderCell_Indices(int d, int s);
+
+    std::vector<int> InsideBorder_Indices(int d, int s);
+
+    void Process_CellData(real input[], const int &length);
+
+    int Fill_CellArray(real msg[], std::vector<int> &cc);
+
+    /**
+     * @brief communicate border cells outside the subdomain with neighbouring processes
+     */
+    void communicate_OutsideBorder();
+
+    void communicate_InsideBorder();
+
+    /**
     * @brief write particle into cell according to coordinates
     *
     * @param p particle to be stored in cell
