@@ -61,8 +61,8 @@ void VelocityVerlet::comp_F() {
 	// set potential energy to 0 in respect of conservation of energy
 	W.e_pot = 0;
 
-	W.clear_BorderCells();
-	W.communicate_InsideBorder();
+	//W.clear_BorderCells();
+	//W.communicate_InsideBorder();
 
 	// calculate forces of particles pairwise and sum up potential energy
     for (auto &c: S.cells){
@@ -80,7 +80,7 @@ void VelocityVerlet::comp_F() {
 			}
 		}
 	}
-    W.clear_BorderCells();
+    //W.clear_BorderCells();
 }
 
 void VelocityVerlet::update_V() {

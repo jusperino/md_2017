@@ -524,7 +524,7 @@ void World::communicate_OutsideBorder(){
 	for(int d=0; d<DIM; d++){
 		if(S.ip_lower[DIM-d] != -1){
 			real msg[MAX_NUMBER];
-			int ACTUAL_NUMBER;
+			int ACTUAL_NUMBER = 0;
 
 			if(S.myrank%2 == 0){
 				MPI_Status status;
@@ -549,7 +549,7 @@ void World::communicate_OutsideBorder(){
 		}
 		if(S.ip_upper[DIM-d] != -1){
 			real msg[MAX_NUMBER];
-			int ACTUAL_NUMBER;
+			int ACTUAL_NUMBER = 0;
 
 			if(S.myrank%2 == 0){
 				MPI_Status status;
@@ -581,7 +581,7 @@ void World::communicate_InsideBorder(){
 	for(int d=0; d<DIM; d++){
 		if(S.ip_lower[DIM-d] != -1){
 			real msg[MAX_NUMBER];
-			int ACTUAL_NUMBER;
+			int ACTUAL_NUMBER = 0;
 
 			if(S.myrank%2 == 0){
 				MPI_Status status;
@@ -607,7 +607,7 @@ void World::communicate_InsideBorder(){
 
 		if(S.ip_upper[DIM-d] != -1){
 			real msg[MAX_NUMBER];
-			int ACTUAL_NUMBER;
+			int ACTUAL_NUMBER = 0;
 
 			if(S.myrank%2 == 0){
 				MPI_Status status;

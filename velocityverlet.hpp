@@ -63,33 +63,6 @@ public:
      */
     virtual void update_Cells();
 
-    /**
-    * @brief send particle p to process ip and
-    */
-    virtual void send_particle(Particle &p, int ip, int ic);
-
-    virtual void receive_particle();
-
-     /**
-      * @brief transmit the particles contained by a specific cell to another process via MPI
-      */
-    virtual void send_cell(int ic, int ip);
-
-    /**
-    * @brief receive particles contained by a cell from a specific process
-    */
-    virtual void recv_cell(int ip);
-
-    /**
-     * @brief exchanges particle information of a block of cells spanned by two given cells with a given process
-     */
-    virtual void exch_block(std::vector<int> I, std::vector<int> J, int ip);
-
-    /**
-     * @brief exchange particle information of border neighborhoods
-     */
-    virtual void exch_bord();
-
 protected:
     // data structures inherited from TimeDiscretization
 
